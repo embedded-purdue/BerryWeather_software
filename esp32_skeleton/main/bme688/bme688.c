@@ -38,7 +38,8 @@ void bme688_init(void) {
     heatr_conf.enable = BME68X_ENABLE;
     heatr_conf.heatr_temp = 300;
     heatr_conf.heatr_dur = 100;
-    bme68x_set_heatr_conf(BME68X_FORCED_MODE, &heatr_conf, bme);
+    bme68x_set_heatr_conf(BME68X_FORCED_MODE, &heatr_conf, &bme);
+    bme68x_set_op_mode(BME68X_FORCED_MODE, &bme);
     
     // Example: Write to a configuration register (replace reg and value)
     // uint8_t config_cmd[2] = {0x74, 0xB6}; // 0x74 = config reg, 0xB6 = config value
