@@ -23,7 +23,7 @@ esp_err_t as7331_init(AS7331 *dev) {
 
     dev->port = I2C_PORT_DEFAULT;
     dev->addr = AS7331_ADDR;
-    
+
     // 1. (Optional) Initialize I2C bus here if not done elsewhere
     i2c_config_t conf = {
         .mode = I2C_MODE_MASTER,
@@ -57,32 +57,31 @@ esp_err_t as7331_init(AS7331 *dev) {
 }
 
 // INCLUDE THE REST OF THE FUNCTIONS BELOW
-esp_err_t AS7331_read_registers(AS7331 *dev, uint8_t reg_addr, uint8_t *data, size_t length){
+esp_err_t AS7331_read_registers(AS7331 *dev, uint8_t reg_addr, uint8_t *data, size_t length) {
 
-    if (!dev || !data || !length) return ESP_ERR_INVALID_ARG; // stops function if accidentally called with invalid argument
-    
+    if (!dev || !data || !length) return ESP_ERR_INVALID_ARG; // stops function if called with invalid arguments
+
     return i2c_master_write_read_device(dev->port, dev->addr, &reg_addr, 1, data, length, 1000/portTICK_PERIOD_MS);
 }
-esp_err_t as7331_read_light(AS7331 *dev, AS7331_Light *light) {
 
-    if (!dev || !light) return ESP_ERR_INVALID_ARG;
+esp_err_t as7331_read_light(AS7331 *dev, AS7331_Light *light) {
 
     uint8_t buf[6]; // 6 byte array for storing UV readings - each reading is 2 bytes long
     esp_err_t err = AS7331_read_registers(dev, UV_MEASUREMENT_START_REG, buf, sizeof(buf)); // read 6 bytes starting from start register
-    
+
     if (err != ESP_OK) return err; // failed i2c transaction
 
-    uint16_t raw_uva = ((uint16_t)buf[1] << 8) | buf[0]; // bitwise or to create 16 bit UVA reading (page 59)
-    uint16_t raw_uvb = ((uint16_t)buf[3] << 8) | buf[2]; // bitwise or to create 16 bit UVB reading (page 59)
-    uint16_t raw_uvc = ((uint16_t)buf[5] << 8) | buf[4]; // bitwise or to create 16 bit UVC reading (page 59)
+    uint16_t raw_uva = ((uint16_t) buf[1] << 8) | buf[0]; // bitwise or to create 16 bit UVA reading (page 59)
+    uint16_t raw_uvb = ((uint16_t) buf[3] << 8) | buf[2]; // bitwise or to create 16 bit UVA reading (page 59)
+    uint16_t raw_uvc = ((uint16_t) buf[5] << 8) | buf[4]; // bitwise or to create 16 bit UVA reading (page 59)
 
     dev->light_reading_raw[0] = raw_uva;
     dev->light_reading_raw[1] = raw_uvb;
     dev->light_reading_raw[2] = raw_uvc;
 
-    const float SCALE_UVA = 0.012f; // placeholder conversion factor - have not configured with known irradiance yet (k = E / counts)
-    const float SCALE_UVB = 0.014f; // placeholder conversion factor - have not configured with known irradiance yet (k = E / counts)
-    const float SCALE_UVC = 0.016f; // placeholder conversion factor - have not configured with known irradiance yet (k = E / counts)
+    const float SCALE_UVA = 0.012f; // placeholder conversion factor k - not yet measured with known irradiance E (k = E / counts)
+    const float SCALE_UVB = 0.014f; // placeholder conversion factor k - not yet measured with known irradiance E (k = E / counts)
+    const float SCALE_UVC = 0.016f; // placeholder conversion factor k - not yet measured with known irradiance E (k = E / counts)
 
     light->uva = raw_uva * SCALE_UVA;
     light->uvb = raw_uvb * SCALE_UVB;

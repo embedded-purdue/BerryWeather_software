@@ -1,2 +1,2 @@
-source /Users/stephenschafer/Dev/esp_berryweather/GitHub/BerryWeather/esp32_skeleton/build/bootloader/gdbinit/symbols
-source /Users/stephenschafer/Dev/esp_berryweather/GitHub/BerryWeather/esp32_skeleton/build/bootloader/gdbinit/connect
+source /Users/connorpowell/Documents/Purdue/ES@P/BerryWeather/BerryWeather/esp32_skeleton/build/bootloader/gdbinit/symbols
+source /Users/connorpowell/Documents/Purdue/ES@P/BerryWeather/BerryWeather/esp32_skeleton/build/bootloader/gdbinit/connect
