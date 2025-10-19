@@ -22,7 +22,7 @@
 #define MM_ADDR 1
 #endif
 
-static void send_cmd_and_print(const char *s) {
+void send_cmd_and_print(const char *s) {
     uart_write_bytes(RYLR998_UART_PORT, s, strlen(s));
     printf("Sent: %s", s);
 
@@ -166,3 +166,4 @@ void app_main(void)
         
     #endif
 }
+
