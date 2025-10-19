@@ -2,34 +2,34 @@
 	"sources" : 
 	[
 		{
-			"file" : "/Users/connorpowell/Documents/Purdue/ES@P/BerryWeather/BerryWeather/esp32_skeleton/build/CMakeFiles/bootloader"
+			"file" : "C:/Users/dprak/esp/projects/BerryWeather/esp32_skeleton/build/CMakeFiles/bootloader"
 		},
 		{
-			"file" : "/Users/connorpowell/Documents/Purdue/ES@P/BerryWeather/BerryWeather/esp32_skeleton/build/CMakeFiles/bootloader.rule"
+			"file" : "C:/Users/dprak/esp/projects/BerryWeather/esp32_skeleton/build/CMakeFiles/bootloader.rule"
 		},
 		{
-			"file" : "/Users/connorpowell/Documents/Purdue/ES@P/BerryWeather/BerryWeather/esp32_skeleton/build/CMakeFiles/bootloader-complete.rule"
+			"file" : "C:/Users/dprak/esp/projects/BerryWeather/esp32_skeleton/build/CMakeFiles/bootloader-complete.rule"
 		},
 		{
-			"file" : "/Users/connorpowell/Documents/Purdue/ES@P/BerryWeather/BerryWeather/esp32_skeleton/build/bootloader-prefix/src/bootloader-stamp/bootloader-build.rule"
+			"file" : "C:/Users/dprak/esp/projects/BerryWeather/esp32_skeleton/build/bootloader-prefix/src/bootloader-stamp/bootloader-build.rule"
 		},
 		{
-			"file" : "/Users/connorpowell/Documents/Purdue/ES@P/BerryWeather/BerryWeather/esp32_skeleton/build/bootloader-prefix/src/bootloader-stamp/bootloader-configure.rule"
+			"file" : "C:/Users/dprak/esp/projects/BerryWeather/esp32_skeleton/build/bootloader-prefix/src/bootloader-stamp/bootloader-configure.rule"
 		},
 		{
-			"file" : "/Users/connorpowell/Documents/Purdue/ES@P/BerryWeather/BerryWeather/esp32_skeleton/build/bootloader-prefix/src/bootloader-stamp/bootloader-download.rule"
+			"file" : "C:/Users/dprak/esp/projects/BerryWeather/esp32_skeleton/build/bootloader-prefix/src/bootloader-stamp/bootloader-download.rule"
 		},
 		{
-			"file" : "/Users/connorpowell/Documents/Purdue/ES@P/BerryWeather/BerryWeather/esp32_skeleton/build/bootloader-prefix/src/bootloader-stamp/bootloader-install.rule"
+			"file" : "C:/Users/dprak/esp/projects/BerryWeather/esp32_skeleton/build/bootloader-prefix/src/bootloader-stamp/bootloader-install.rule"
 		},
 		{
-			"file" : "/Users/connorpowell/Documents/Purdue/ES@P/BerryWeather/BerryWeather/esp32_skeleton/build/bootloader-prefix/src/bootloader-stamp/bootloader-mkdir.rule"
+			"file" : "C:/Users/dprak/esp/projects/BerryWeather/esp32_skeleton/build/bootloader-prefix/src/bootloader-stamp/bootloader-mkdir.rule"
 		},
 		{
-			"file" : "/Users/connorpowell/Documents/Purdue/ES@P/BerryWeather/BerryWeather/esp32_skeleton/build/bootloader-prefix/src/bootloader-stamp/bootloader-patch.rule"
+			"file" : "C:/Users/dprak/esp/projects/BerryWeather/esp32_skeleton/build/bootloader-prefix/src/bootloader-stamp/bootloader-patch.rule"
 		},
 		{
-			"file" : "/Users/connorpowell/Documents/Purdue/ES@P/BerryWeather/BerryWeather/esp32_skeleton/build/bootloader-prefix/src/bootloader-stamp/bootloader-update.rule"
+			"file" : "C:/Users/dprak/esp/projects/BerryWeather/esp32_skeleton/build/bootloader-prefix/src/bootloader-stamp/bootloader-update.rule"
 		}
 	],
 	"target" : 
