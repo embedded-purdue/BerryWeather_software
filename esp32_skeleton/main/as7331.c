@@ -1,7 +1,8 @@
 // as7331.c - AS7331 sensor driver source (stub)
 #include "as7331.h"
 #include <stdio.h>
-#include "driver/i2c.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
 
 #define AS7331_ADDR 0x74 // page 42: AS7331 sensor's I2C address- Can run 4 AS7331s on the same I2C bus with A1 and A0 pins defining two lowest-order bits (high or low) - Assuming both A1 and A0 tied to GND
 #define OPERATIONAL_STATE_REG_AS7331 0x00 // page 48: OSR is at 0x00

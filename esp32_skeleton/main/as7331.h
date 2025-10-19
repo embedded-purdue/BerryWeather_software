@@ -2,8 +2,9 @@
 #ifndef AS7331_H
 #define AS7331_H
 
-// Initializes the AS7331 sensor
-esp_err_t as7331_init(AS7331 *dev);
+#include <stdint.h>
+#include "esp_err.h"
+#include "driver/i2c.h"
 
 // INCLUDE THE REST OF THE FUNCTIONS BELOW
 typedef struct {
@@ -22,8 +23,11 @@ typedef struct {
 
 } AS7331_Light;
 
+// Initializes the sensor
+esp_err_t as7331_init(AS7331 *dev);
+
 // Read UV data function
-esp_err_t as7331_read light(AS7331 *dev, AS7331_Light *light);
+esp_err_t as7331_read_light(AS7331 *dev, AS7331_Light *light);
 
 // Low level function
 esp_err_t AS7331_read_registers(AS7331 *dev, uint8_t reg_addr, uint8_t *data, size_t length);

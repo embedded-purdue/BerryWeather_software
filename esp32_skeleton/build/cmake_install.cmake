@@ -1,4 +1,4 @@
-# Install script for directory: /Users/connorpowell/Documents/Purdue/ES@P/BerryWeather/BerryWeather/esp32_skeleton
+# Install script for directory: /Users/stephenschafer/Dev/esp_berryweather/GitHub/BerryWeather/esp32_skeleton
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -34,18 +34,18 @@ endif()
 
 # Set path to fallback-tool for dependency-resolution.
 if(NOT DEFINED CMAKE_OBJDUMP)
-  set(CMAKE_OBJDUMP "/Users/connorpowell/.espressif/tools/xtensa-esp-elf/esp-14.2.0_20241119/xtensa-esp-elf/bin/xtensa-esp32-elf-objdump")
+  set(CMAKE_OBJDUMP "/Users/stephenschafer/.espressif/tools/xtensa-esp-elf/esp-14.2.0_20241119/xtensa-esp-elf/bin/xtensa-esp32-elf-objdump")
 endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for the subdirectory.
-  include("/Users/connorpowell/Documents/Purdue/ES@P/BerryWeather/BerryWeather/esp32_skeleton/build/esp-idf/cmake_install.cmake")
+  include("/Users/stephenschafer/Dev/esp_berryweather/GitHub/BerryWeather/esp32_skeleton/build/esp-idf/cmake_install.cmake")
 endif()
 
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
 if(CMAKE_INSTALL_LOCAL_ONLY)
-  file(WRITE "/Users/connorpowell/Documents/Purdue/ES@P/BerryWeather/BerryWeather/esp32_skeleton/build/install_local_manifest.txt"
+  file(WRITE "/Users/stephenschafer/Dev/esp_berryweather/GitHub/BerryWeather/esp32_skeleton/build/install_local_manifest.txt"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")
 endif()
 if(CMAKE_INSTALL_COMPONENT)
@@ -61,6 +61,6 @@ else()
 endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
-  file(WRITE "/Users/connorpowell/Documents/Purdue/ES@P/BerryWeather/BerryWeather/esp32_skeleton/build/${CMAKE_INSTALL_MANIFEST}"
+  file(WRITE "/Users/stephenschafer/Dev/esp_berryweather/GitHub/BerryWeather/esp32_skeleton/build/${CMAKE_INSTALL_MANIFEST}"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")
 endif()
