@@ -38,8 +38,10 @@ esp_err_t as7331_init(AS7331 *dev) {
         
     // 2. Reset the sensor
     uint8_t reset_cmd[2] = {OPERATIONAL_STATE_REG_AS7331, RESET_VALUE_AS7331};
-    i2c_master_write_to_device(I2C_NUM_0, AS7331_ADDR, reset_cmd, 2, 1000 / portTICK_PERIOD_MS);
-
+    esp_err_t i2c_check = i2c_master_write_to_device(I2C_NUM_0, AS7331_ADDR, reset_cmd, 2, 1000 / portTICK_PERIOD_MS);
+    if(i2c_check!= ESP_OK) {
+        return i2c_check;
+    }
     // 3. Configure integration time, gain, etc. (see AS7331 datasheet for details)
     // Example: Write to a configuration register (replace reg and value)
     // uint8_t config_cmd[2] = {0xXX, 0xXX}; // 0xXX = config reg, 0xXX = config value
