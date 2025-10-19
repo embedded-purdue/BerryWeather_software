@@ -112,6 +112,38 @@ void start_reset_LoRA()
         vTaskDelete(NULL);
     }
 
+    //Task that communicates with listen_task on MM side. Will send a json message which will 
+    //contain the state topic update
+    void send_task(void* arg)
+    {
+        // 1. Simulate getting data from your sensors
+        float temperature = 23.4;
+        int humidity = 58;
+        float pressure = 1007.2;
+        float uv_index = 3.1;
+
+        //This is where we would get data from sensors:
+        temperature = get_temp_data();
+        humidity = get_humidity_data();
+        pressure = get_pressure_data();
+        uv_index = get_uv_data();
+
+        // 2. Create a buffer to hold the formatted JSON string
+        char json_payload[128];
+
+        // 3. Use snprintf to format the sensor data into the JSON string
+        // Note the escaped quotes (\") and format specifiers (%.1f, %d)
+        snprintf(json_payload, sizeof(json_payload),
+                "{\"t\":%.1f,\"h\":%d,\"p\":%.1f,\"uv\":%.1f}",
+                temperature, humidity, pressure, uv_index);
+
+        // 4. Send the fully-formed JSON payload via LoRa
+        send_lora_message(MM_ADDR, json_payload);
+
+        // This task is done, so it can be deleted.
+        vTaskDelete(NULL);
+    }
+
     // Task to send AT commands for setup
     void lora_satellite_setup(void *arg)
     {
@@ -119,7 +151,13 @@ void start_reset_LoRA()
         // Start task to send test message
         xTaskCreate(send_test, "send_test", 2048, NULL, 5, NULL);
         vTaskDelete(NULL);
+
+        xTaskCreate(send_task, "send_task", 2048, NULL, 5, NULL);
+        vTaskDelete(NULL);
+
     }
+
+
 #endif
 
 #ifdef MM_DEVICE
