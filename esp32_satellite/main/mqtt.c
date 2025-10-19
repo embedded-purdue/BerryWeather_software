@@ -12,12 +12,34 @@
 #include "nvs_flash.h"
 #include "esp_event.h"
 #include "esp_netif.h"
-#include "protocol_examples_common.h"
+#include "driver/uart.h"
+// #include "protocol_examples_common.h"
 #include "esp_log.h"
 #include "cJSON.h"
+#include "mqtt_client.h"
+
+#include "freertos/FreeRTOS.h"
+#include "freertos/event_groups.h"
+#include "esp_wifi.h"
+#include "esp_event.h"
+
+// These macros will use the values you set in menuconfig
+#define WIFI_SSID     "NETGEAR31"
+#define WIFI_PASS     "Boilerup321"
+#define CONFIG_BROKER_URL "mqtt://192.168.1.5:1883"
+#define RYLR998_UART_PORT    UART_NUM_1
+#define RYLR998_TXD_PIN      GPIO_NUM_17   // ESP32 TX → module RX
+#define RYLR998_RXD_PIN      GPIO_NUM_16   // ESP32 RX ← module TX
+#define RYLR998_NRST_PIN     GPIO_NUM_4    // (active low) reset pin
+
+static EventGroupHandle_t s_wifi_event_group;
+#define WIFI_CONNECTED_BIT BIT0
+#define WIFI_FAIL_BIT      BIT1
+
+static int s_retry_num = 0;
 
 #define MM_BUF_SIZE 4096
-static const char *TAG = "mqtt5_example";
+static const char *TAG = "mqtt_berryWeather";
 
 static void log_error_if_nonzero(const char *message, int error_code)
 {
@@ -43,32 +65,6 @@ static esp_mqtt5_publish_property_config_t publish_property = {
     .correlation_data_len = 6,
 };
 
-static esp_mqtt5_subscribe_property_config_t subscribe_property = {
-    .subscribe_id = 25555,
-    .no_local_flag = false,
-    .retain_as_published_flag = false,
-    .retain_handle = 0,
-    .is_share_subscribe = true,
-    .share_name = "group1",
-};
-
-static esp_mqtt5_subscribe_property_config_t subscribe1_property = {
-    .subscribe_id = 25555,
-    .no_local_flag = true,
-    .retain_as_published_flag = false,
-    .retain_handle = 0,
-};
-
-static esp_mqtt5_unsubscribe_property_config_t unsubscribe_property = {
-    .is_share_subscribe = true,
-    .share_name = "group1",
-};
-
-static esp_mqtt5_disconnect_property_config_t disconnect_property = {
-    .session_expiry_interval = 60,
-    .disconnect_reason = 0,
-};
-
 static void print_user_property(mqtt5_user_property_handle_t user_property)
 {
     if (user_property) {
@@ -85,6 +81,64 @@ static void print_user_property(mqtt5_user_property_handle_t user_property)
             }
             free(item);
         }
+    }
+}
+
+static void event_handler(void* arg, esp_event_base_t event_base, int32_t event_id, void* event_data)
+{
+    if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_START) {
+    esp_wifi_connect();
+    } else if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_DISCONNECTED) {
+    if (s_retry_num < 5) { // Retry up to 5 times
+    esp_wifi_connect();
+    s_retry_num++;
+    ESP_LOGI(TAG, "Retrying to connect to the AP");
+    } else {
+    xEventGroupSetBits(s_wifi_event_group, WIFI_FAIL_BIT);
+    }
+    ESP_LOGI(TAG,"Connect to the AP fail");
+    } else if (event_base == IP_EVENT && event_id == IP_EVENT_STA_GOT_IP) {
+    ip_event_got_ip_t* event = (ip_event_got_ip_t*) event_data;
+    ESP_LOGI(TAG, "Got IP address:" IPSTR, IP2STR(&event->ip_info.ip));
+    s_retry_num = 0;
+    xEventGroupSetBits(s_wifi_event_group, WIFI_CONNECTED_BIT);
+    }
+}
+
+void wifi_init_sta(void)
+{
+    s_wifi_event_group = xEventGroupCreate();
+
+    wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
+    ESP_ERROR_CHECK(esp_wifi_init(&cfg));
+
+    ESP_ERROR_CHECK(esp_event_handler_register(WIFI_EVENT, ESP_EVENT_ANY_ID, &event_handler, NULL));
+    ESP_ERROR_CHECK(esp_event_handler_register(IP_EVENT, IP_EVENT_STA_GOT_IP, &event_handler, NULL));
+
+    wifi_config_t wifi_config = {
+        .sta = {
+            .ssid = WIFI_SSID,
+            .password = WIFI_PASS,
+        },
+    };
+    ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
+    ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_STA, &wifi_config));
+    ESP_ERROR_CHECK(esp_wifi_start());
+
+    ESP_LOGI(TAG, "wifi_init_sta finished.");
+
+    EventBits_t bits = xEventGroupWaitBits(s_wifi_event_group,
+            WIFI_CONNECTED_BIT | WIFI_FAIL_BIT,
+            pdFALSE,
+            pdFALSE,
+            portMAX_DELAY);
+
+    if (bits & WIFI_CONNECTED_BIT) {
+        ESP_LOGI(TAG, "Connected to AP SSID:%s", WIFI_SSID);
+    } else if (bits & WIFI_FAIL_BIT) {
+        ESP_LOGW(TAG, "Failed to connect to SSID:%s", WIFI_SSID);
+    } else {
+        ESP_LOGE(TAG, "UNEXPECTED EVENT");
     }
 }
 
@@ -233,22 +287,20 @@ void listen_task(void *arg)
     // listen for incoming messages
     uint8_t data[MM_BUF_SIZE];
     while (1) {
-        int len = uart_read_bytes(RYLR998_UART_PORT, data, BUF_SIZE - 1, pdMS_TO_TICKS(1000));
+        int len = uart_read_bytes(RYLR998_UART_PORT, data, MM_BUF_SIZE - 1, pdMS_TO_TICKS(1000));
         if (len > 0) {
             data[len] = '\0';
             printf("Received: %s\n", data);
         }
 
         //Parse the message
-        cJSON *root = cJSON_Parse(lora_message);
+        cJSON *root = cJSON_Parse((char*)data);
         if (!root) continue;
 
         // --- Always publish the state update ---
-        char state_topic[64];
-        snprintf(state_topic, sizeof(state_topic), "weather/%s/state", satellite->id);
+        const char *state_topic = "weather/berrystation_1/state";
         
-        esp_mqtt_client_publish(client, state_topic, lora_message, 0, 0, false);
-        
+        esp_mqtt_client_publish(client, state_topic, (const char *)data, 0, 0, false);        
         cJSON_Delete(root);
         vTaskDelay(pdMS_TO_TICKS(10000));
     }
@@ -305,21 +357,6 @@ static void mqtt5_event_handler(void *handler_args, esp_event_base_t base, int32
 static void mqtt5_app_start(void)
 {
     ////////////CONFIG///////////////////
-    esp_mqtt5_connection_property_config_t connect_property = {
-        .session_expiry_interval = 10,
-        .maximum_packet_size = 1024,
-        .receive_maximum = 65535,
-        .topic_alias_maximum = 2,
-        .request_resp_info = true,
-        .request_problem_info = true,
-        .will_delay_interval = 10,
-        .payload_format_indicator = true,
-        .message_expiry_interval = 10,
-        .response_topic = "/test/response",
-        .correlation_data = "123456",
-        .correlation_data_len = 6,
-    };
-
     esp_mqtt_client_config_t mqtt5_cfg = {
         .broker.address.uri = CONFIG_BROKER_URL,
         .session.protocol_ver = MQTT_PROTOCOL_V_5,
@@ -335,18 +372,6 @@ static void mqtt5_app_start(void)
     /////////////////////////////
     
     esp_mqtt_client_handle_t client = esp_mqtt_client_init(&mqtt5_cfg);
-
-    //Sets the connection and user properties -> mallocs memory.
-    esp_mqtt5_client_set_user_property(&connect_property.user_property, user_property_arr, USE_PROPERTY_ARR_SIZE);
-    esp_mqtt5_client_set_user_property(&connect_property.will_user_property, user_property_arr, USE_PROPERTY_ARR_SIZE);
-    
-    //Makes a copy and sets those properties to the client
-    esp_mqtt5_client_set_connect_property(client, &connect_property);
-
-    //Now the properties are set, so need to free the memory allocated for connect property
-    esp_mqtt5_client_delete_user_property(connect_property.user_property);
-    esp_mqtt5_client_delete_user_property(connect_property.will_user_property);
-
     /* The last argument may be used to pass data to the event handler, in this example mqtt_event_handler */
     //Can pass special structs ("tools") that the event handler can use.
     esp_mqtt_client_register_event(client, ESP_EVENT_ANY_ID, mqtt5_event_handler, NULL); //registering the event handler before client starts.
@@ -385,7 +410,13 @@ void init_checks()
      * Read "Establishing Wi-Fi or Ethernet Connection" section in
      * examples/protocols/README.md for more information about this function.
      */
-    ESP_ERROR_CHECK(example_connect());
+    // ESP_ERROR_CHECK(example_connect());
+
+    // Create the default Wi-Fi station network interface
+    esp_netif_create_default_wifi_sta();
+
+    // Call your new Wi-Fi connection function
+    wifi_init_sta();
 }
 
 void app_main(void)
