@@ -89,13 +89,149 @@ static void print_user_property(mqtt5_user_property_handle_t user_property)
 
 
 /*
-CONFIG:
-
-
+Helper functions:
 */
+void handle_mqtt_event_data(esp_mqtt_event_handle_t event)
+{
+    ESP_LOGI(TAG, "MQTT_EVENT_DATA");
+    print_user_property(event->property->user_property);
+    ESP_LOGI(TAG, "payload_format_indicator is %d", event->property->payload_format_indicator);
+    ESP_LOGI(TAG, "response_topic is %.*s", event->property->response_topic_len, event->property->response_topic);
+    ESP_LOGI(TAG, "correlation_data is %.*s", event->property->correlation_data_len, event->property->correlation_data);
+    ESP_LOGI(TAG, "content_type is %.*s", event->property->content_type_len, event->property->content_type);
+    ESP_LOGI(TAG, "TOPIC=%.*s", event->topic_len, event->topic);
+    ESP_LOGI(TAG, "DATA=%.*s", event->data_len, event->data);
+}
+
+void handle_mqtt_error(esp_mqtt_event_handle_t event)
+{
+    ESP_LOGI(TAG, "MQTT_EVENT_ERROR");
+    print_user_property(event->property->user_property);
+    ESP_LOGI(TAG, "MQTT5 return code is %d", event->error_handle->connect_return_code);
+    if (event->error_handle->error_type == MQTT_ERROR_TYPE_TCP_TRANSPORT) {
+        log_error_if_nonzero("reported from esp-tls", event->error_handle->esp_tls_last_esp_err);
+        log_error_if_nonzero("reported from tls stack", event->error_handle->esp_tls_stack_err);
+        log_error_if_nonzero("captured as transport's socket errno",  event->error_handle->esp_transport_sock_errno);
+        ESP_LOGI(TAG, "Last errno string (%s)", strerror(event->error_handle->esp_transport_sock_errno));
+    }
+}
+
+void publish_temperature_discovery_message(esp_mqtt_client_handle_t client)
+{
+    // Step 1: Define the discovery topic from your slide
+    const char *discovery_topic = "homeassistant/sensor/berrystation_1_temperature/config";
+
+    // Step 2: Define the JSON payload from your slide
+    // C automatically combines these strings into one.
+    const char *discovery_payload =
+        "{"
+            "\"name\": \"Station 1 Temperature\","
+            "\"unique_id\": \"berrystation_1_temperature\","
+            "\"stat_t\": \"weather/berrystation_1/state\"," // State topic
+            "\"val_tpl\": \"{{ value_json.t }}\","         // Template to get the value
+            "\"unit_of_meas\": \"°F\","
+            "\"dev_cla\": \"temperature\","
+            "\"ic\": \"mdi:thermometer\","
+            "\"dev\": {"
+                "\"ids\": [\"berrystation_1\"],"
+                "\"name\": \"BerryWeather Station 1\","
+                "\"mf\": \"ESAP\""
+            "}"
+        "}";
+
+    // Step 3: Publish the message with the RETAIN flag set to true
+    ESP_LOGI(TAG, "Publishing discovery message to topic: %s", discovery_topic);
+    int msg_id = esp_mqtt_client_publish(client, 
+                                         discovery_topic, 
+                                         discovery_payload, 
+                                         0,     // length 0 means use strlen
+                                         1,     // QoS level 1
+                                         true); // RETAIN = true is critical!
+
+    if (msg_id != -1) {
+        ESP_LOGI(TAG, "Discovery message sent successfully, msg_id=%d", msg_id);
+    } else {
+        ESP_LOGE(TAG, "Failed to send discovery message.");
+    }
+}
+
+void publish_humidity_discovery_message(esp_mqtt_client_handle_t client)
+{
+    // Topic from your slide
+    const char *discovery_topic = "homeassistant/sensor/berrystation_1_humidity/config";
+
+    // JSON payload from your slide
+    const char *discovery_payload =
+        "{"
+            "\"name\": \"Station 1 Humidity\","
+            "\"unique_id\": \"berrystation_1_humidity\","
+            "\"stat_t\": \"weather/berrystation_1/state\","
+            "\"val_tpl\": \"{{ value_json.h }}\"," // Extracts the 'h' field
+            "\"unit_of_meas\": \"%\","
+            "\"dev_cla\": \"humidity\","
+            "\"ic\": \"mdi:water-percent\","
+            "\"dev\": {"
+                "\"ids\": [\"berrystation_1\"],"
+                "\"name\": \"BerryWeather Station 1\","
+                "\"mf\": \"ESAP\""
+            "}"
+        "}";
+
+    ESP_LOGI(TAG, "Publishing humidity discovery message...");
+    esp_mqtt_client_publish(client, discovery_topic, discovery_payload, 0, 1, true);
+}
+
+void publish_pressure_discovery_message(esp_mqtt_client_handle_t client)
+{
+    const char *discovery_topic = "homeassistant/sensor/berrystation_1_pressure/config";
+
+    const char *discovery_payload =
+        "{"
+            "\"name\": \"Station 1 Pressure\","
+            "\"unique_id\": \"berrystation_1_pressure\","
+            "\"stat_t\": \"weather/berrystation_1/state\","
+            "\"val_tpl\": \"{{ value_json.p }}\"," // Extracts the 'p' field
+            "\"unit_of_meas\": \"hPa\","           // Unit: hectopascals
+            "\"dev_cla\": \"pressure\","
+            "\"ic\": \"mdi:gauge\","               // Icon: a pressure gauge
+            "\"dev\": {"
+                "\"ids\": [\"berrystation_1\"],"
+                "\"name\": \"BerryWeather Station 1\","
+                "\"mf\": \"ESAP\""
+            "}"
+        "}";
+
+    ESP_LOGI(TAG, "Publishing pressure discovery message...");
+    esp_mqtt_client_publish(client, discovery_topic, discovery_payload, 0, 1, true);
+}
+
+void publish_uv_discovery_message(esp_mqtt_client_handle_t client)
+{
+    const char *discovery_topic = "homeassistant/sensor/berrystation_1_uv/config";
+
+    const char *discovery_payload =
+        "{"
+            "\"name\": \"Station 1 UV Index\","
+            "\"unique_id\": \"berrystation_1_uv\","
+            "\"stat_t\": \"weather/berrystation_1/state\","
+            "\"val_tpl\": \"{{ value_json.uv }}\","  // Extracts the 'uv' field
+            "\"unit_of_meas\": \"UV Index\","
+            // No device class for UV index, so we omit it.
+            "\"ic\": \"mdi:sun-wireless\","          // Icon: sun with rays
+            "\"dev\": {"
+                "\"ids\": [\"berrystation_1\"],"
+                "\"name\": \"BerryWeather Station 1\","
+                "\"mf\": \"ESAP\""
+            "}"
+        "}";
+
+    ESP_LOGI(TAG, "Publishing UV discovery message...");
+    esp_mqtt_client_publish(client, discovery_topic, discovery_payload, 0, 1, true);
+}
+
+
 /*
 ACTUAL CODE STARTS HERE: 
-TEMP TASK
 */
 static void temperature_task(void *arg)
 {
@@ -130,36 +266,16 @@ static void mqtt5_event_handler(void *handler_args, esp_event_base_t base, int32
     switch ((esp_mqtt_event_id_t)event_id) {
     case MQTT_EVENT_CONNECTED:
         ESP_LOGI(TAG, "MQTT_EVENT_CONNECTED");
-        print_user_property(event->property->user_property);
-        esp_mqtt5_client_set_user_property(&publish_property.user_property, user_property_arr, USE_PROPERTY_ARR_SIZE);
-        esp_mqtt5_client_set_publish_property(client, &publish_property);
-        msg_id = esp_mqtt_client_publish(client, "/topic/qos1", "data_3", 0, 1, 1);
-        esp_mqtt5_client_delete_user_property(publish_property.user_property);
-        publish_property.user_property = NULL;
-        ESP_LOGI(TAG, "sent publish successful, msg_id=%d", msg_id);
+    
 
-        esp_mqtt5_client_set_user_property(&subscribe_property.user_property, user_property_arr, USE_PROPERTY_ARR_SIZE);
-        esp_mqtt5_client_set_subscribe_property(client, &subscribe_property);
-        msg_id = esp_mqtt_client_subscribe(client, "/topic/qos0", 0);
-        esp_mqtt5_client_delete_user_property(subscribe_property.user_property);
-        subscribe_property.user_property = NULL;
-        ESP_LOGI(TAG, "sent subscribe successful, msg_id=%d", msg_id);
+        //SENDING DISCOVERY TOPICS:
+        publish_temperature_discovery_message(client);
+        publish_humidity_discovery_message(client);
+        publish_pressure_discovery_message(client);
+        publish_uv_discovery_message(client);
 
-        esp_mqtt5_client_set_user_property(&subscribe1_property.user_property, user_property_arr, USE_PROPERTY_ARR_SIZE);
-        esp_mqtt5_client_set_subscribe_property(client, &subscribe1_property);
-        msg_id = esp_mqtt_client_subscribe(client, "/topic/qos1", 2);
-        esp_mqtt5_client_delete_user_property(subscribe1_property.user_property);
-        subscribe1_property.user_property = NULL;
-        ESP_LOGI(TAG, "sent subscribe successful, msg_id=%d", msg_id);
+        //SWITCHING TO SENSOR UPDATE MODE:
         xTaskCreate(temperature_task, "temperature_task", 4096, client, 5, NULL);
-        break;
-
-        esp_mqtt5_client_set_user_property(&unsubscribe_property.user_property, user_property_arr, USE_PROPERTY_ARR_SIZE);
-        esp_mqtt5_client_set_unsubscribe_property(client, &unsubscribe_property);
-        msg_id = esp_mqtt_client_unsubscribe(client, "/topic/qos0");
-        ESP_LOGI(TAG, "sent unsubscribe successful, msg_id=%d", msg_id);
-        esp_mqtt5_client_delete_user_property(unsubscribe_property.user_property);
-        unsubscribe_property.user_property = NULL;
         break;
     case MQTT_EVENT_DISCONNECTED:
         ESP_LOGI(TAG, "MQTT_EVENT_DISCONNECTED");
@@ -186,25 +302,10 @@ static void mqtt5_event_handler(void *handler_args, esp_event_base_t base, int32
         print_user_property(event->property->user_property);
         break;
     case MQTT_EVENT_DATA:
-        ESP_LOGI(TAG, "MQTT_EVENT_DATA");
-        print_user_property(event->property->user_property);
-        ESP_LOGI(TAG, "payload_format_indicator is %d", event->property->payload_format_indicator);
-        ESP_LOGI(TAG, "response_topic is %.*s", event->property->response_topic_len, event->property->response_topic);
-        ESP_LOGI(TAG, "correlation_data is %.*s", event->property->correlation_data_len, event->property->correlation_data);
-        ESP_LOGI(TAG, "content_type is %.*s", event->property->content_type_len, event->property->content_type);
-        ESP_LOGI(TAG, "TOPIC=%.*s", event->topic_len, event->topic);
-        ESP_LOGI(TAG, "DATA=%.*s", event->data_len, event->data);
+        handle_mqtt_event_data(event);
         break;
     case MQTT_EVENT_ERROR:
-        ESP_LOGI(TAG, "MQTT_EVENT_ERROR");
-        print_user_property(event->property->user_property);
-        ESP_LOGI(TAG, "MQTT5 return code is %d", event->error_handle->connect_return_code);
-        if (event->error_handle->error_type == MQTT_ERROR_TYPE_TCP_TRANSPORT) {
-            log_error_if_nonzero("reported from esp-tls", event->error_handle->esp_tls_last_esp_err);
-            log_error_if_nonzero("reported from tls stack", event->error_handle->esp_tls_stack_err);
-            log_error_if_nonzero("captured as transport's socket errno",  event->error_handle->esp_transport_sock_errno);
-            ESP_LOGI(TAG, "Last errno string (%s)", strerror(event->error_handle->esp_transport_sock_errno));
-        }
+        handle_mqtt_error(event);
         break;
     default:
         ESP_LOGI(TAG, "Other event id:%d", event->event_id);
