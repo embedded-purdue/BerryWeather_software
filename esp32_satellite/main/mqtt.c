@@ -14,8 +14,9 @@
 #include "esp_netif.h"
 #include "protocol_examples_common.h"
 #include "esp_log.h"
-#include "mqtt_client.h"
+#include "cJSON.h"
 
+#define MM_BUF_SIZE 4096
 static const char *TAG = "mqtt5_example";
 
 static void log_error_if_nonzero(const char *message, int error_code)
@@ -87,21 +88,12 @@ static void print_user_property(mqtt5_user_property_handle_t user_property)
     }
 }
 
-
+/*
+ACTUAL CODE STARTS HERE: 
+*/
 /*
 Helper functions:
 */
-void handle_mqtt_event_data(esp_mqtt_event_handle_t event)
-{
-    ESP_LOGI(TAG, "MQTT_EVENT_DATA");
-    print_user_property(event->property->user_property);
-    ESP_LOGI(TAG, "payload_format_indicator is %d", event->property->payload_format_indicator);
-    ESP_LOGI(TAG, "response_topic is %.*s", event->property->response_topic_len, event->property->response_topic);
-    ESP_LOGI(TAG, "correlation_data is %.*s", event->property->correlation_data_len, event->property->correlation_data);
-    ESP_LOGI(TAG, "content_type is %.*s", event->property->content_type_len, event->property->content_type);
-    ESP_LOGI(TAG, "TOPIC=%.*s", event->topic_len, event->topic);
-    ESP_LOGI(TAG, "DATA=%.*s", event->data_len, event->data);
-}
 
 void handle_mqtt_error(esp_mqtt_event_handle_t event)
 {
@@ -229,31 +221,40 @@ void publish_uv_discovery_message(esp_mqtt_client_handle_t client)
     esp_mqtt_client_publish(client, discovery_topic, discovery_payload, 0, 1, true);
 }
 
-
 /*
-ACTUAL CODE STARTS HERE: 
+Constantly listens for updates on LoRA.
+As soon as there's an update -> Decodes and Understands what the update is -> Publishes a state topic 
+
 */
-static void temperature_task(void *arg)
+void listen_task(void *arg)
 {
     esp_mqtt_client_handle_t client = (esp_mqtt_client_handle_t) arg;
-    char payload[64];
-    int counter = 0;
 
+    // listen for incoming messages
+    uint8_t data[MM_BUF_SIZE];
     while (1) {
-        // Simulate data (replace with real sensor read later)
-        float temp = 25.0 + (esp_random() % 100) / 10.0;     // 25.0 – 34.9 °C
-        float humidity = 50.0 + (esp_random() % 200) / 10.0; // 50.0 – 69.9 %
+        int len = uart_read_bytes(RYLR998_UART_PORT, data, BUF_SIZE - 1, pdMS_TO_TICKS(1000));
+        if (len > 0) {
+            data[len] = '\0';
+            printf("Received: %s\n", data);
+        }
 
-        // Format as CSV: timestamp,temp,humidity
-        snprintf(payload, sizeof(payload), "%d,%.2f,%.2f", counter++, temp, humidity);
+        //Parse the message
+        cJSON *root = cJSON_Parse(lora_message);
+        if (!root) continue;
 
-        // Publish to topic
-        int msg_id = esp_mqtt_client_publish(client, "/sensor/temperature", payload, 0, 1, 0);
-        ESP_LOGI(TAG, "Published CSV: %s (msg_id=%d)", payload, msg_id);
-
-        vTaskDelay(pdMS_TO_TICKS(5000)); // send every 5 seconds
+        // --- Always publish the state update ---
+        char state_topic[64];
+        snprintf(state_topic, sizeof(state_topic), "weather/%s/state", satellite->id);
+        
+        esp_mqtt_client_publish(client, state_topic, lora_message, 0, 0, false);
+        
+        cJSON_Delete(root);
+        vTaskDelay(pdMS_TO_TICKS(10000));
     }
 }
+
+
 
 static void mqtt5_event_handler(void *handler_args, esp_event_base_t base, int32_t event_id, void *event_data)
 {
@@ -264,52 +265,40 @@ static void mqtt5_event_handler(void *handler_args, esp_event_base_t base, int32
 
     ESP_LOGD(TAG, "free heap size is %" PRIu32 ", minimum %" PRIu32, esp_get_free_heap_size(), esp_get_minimum_free_heap_size());
     switch ((esp_mqtt_event_id_t)event_id) {
-    case MQTT_EVENT_CONNECTED:
-        ESP_LOGI(TAG, "MQTT_EVENT_CONNECTED");
+        case MQTT_EVENT_CONNECTED:
+            ESP_LOGI(TAG, "MQTT_EVENT_CONNECTED");
     
+            //SENDING DISCOVERY TOPICS:
+            publish_temperature_discovery_message(client);
+            publish_humidity_discovery_message(client);
+            publish_pressure_discovery_message(client);
+            publish_uv_discovery_message(client);
 
-        //SENDING DISCOVERY TOPICS:
-        publish_temperature_discovery_message(client);
-        publish_humidity_discovery_message(client);
-        publish_pressure_discovery_message(client);
-        publish_uv_discovery_message(client);
-
-        //SWITCHING TO SENSOR UPDATE MODE:
-        xTaskCreate(temperature_task, "temperature_task", 4096, client, 5, NULL);
-        break;
-    case MQTT_EVENT_DISCONNECTED:
-        ESP_LOGI(TAG, "MQTT_EVENT_DISCONNECTED");
-        print_user_property(event->property->user_property);
-        break;
-    case MQTT_EVENT_SUBSCRIBED:
-        ESP_LOGI(TAG, "MQTT_EVENT_SUBSCRIBED, msg_id=%d", event->msg_id);
-        print_user_property(event->property->user_property);
-        esp_mqtt5_client_set_publish_property(client, &publish_property);
-        msg_id = esp_mqtt_client_publish(client, "/topic/qos0", "data", 0, 0, 0);
-        ESP_LOGI(TAG, "sent publish successful, msg_id=%d", msg_id);
-        break;
-    case MQTT_EVENT_UNSUBSCRIBED:
-        ESP_LOGI(TAG, "MQTT_EVENT_UNSUBSCRIBED, msg_id=%d", event->msg_id);
-        print_user_property(event->property->user_property);
-        esp_mqtt5_client_set_user_property(&disconnect_property.user_property, user_property_arr, USE_PROPERTY_ARR_SIZE);
-        esp_mqtt5_client_set_disconnect_property(client, &disconnect_property);
-        esp_mqtt5_client_delete_user_property(disconnect_property.user_property);
-        disconnect_property.user_property = NULL;
-        esp_mqtt_client_disconnect(client);
-        break;
-    case MQTT_EVENT_PUBLISHED:
-        ESP_LOGI(TAG, "MQTT_EVENT_PUBLISHED, msg_id=%d", event->msg_id);
-        print_user_property(event->property->user_property);
-        break;
-    case MQTT_EVENT_DATA:
-        handle_mqtt_event_data(event);
-        break;
-    case MQTT_EVENT_ERROR:
-        handle_mqtt_error(event);
-        break;
-    default:
-        ESP_LOGI(TAG, "Other event id:%d", event->event_id);
-        break;
+            //SWITCHING TO SENSOR UPDATE MODE:
+            xTaskCreate(listen_task, "listen_task", 4096, client, 5, NULL);
+            break;
+        case MQTT_EVENT_DISCONNECTED:
+            ESP_LOGI(TAG, "MQTT_EVENT_DISCONNECTED");
+            print_user_property(event->property->user_property);
+            break;
+        case MQTT_EVENT_SUBSCRIBED:
+            ESP_LOGI(TAG, "MQTT_EVENT_SUBSCRIBED, msg_id=%d", event->msg_id);
+            print_user_property(event->property->user_property);
+            esp_mqtt5_client_set_publish_property(client, &publish_property);
+            msg_id = esp_mqtt_client_publish(client, "/topic/qos0", "data", 0, 0, 0);
+            ESP_LOGI(TAG, "sent publish successful, msg_id=%d", msg_id);
+            break;
+        case MQTT_EVENT_PUBLISHED:
+            ESP_LOGI(TAG, "MQTT_EVENT_PUBLISHED, msg_id=%d", event->msg_id);
+            print_user_property(event->property->user_property);
+            break;
+        case MQTT_EVENT_ERROR:
+            handle_mqtt_error(event);
+            break;
+        //MQTT_EVENT_DATA -> ADD if need to receive msgs back from home assistant to middleman.
+        default:
+            ESP_LOGI(TAG, "Other event id:%d", event->event_id);
+            break;
     }
 }
 
