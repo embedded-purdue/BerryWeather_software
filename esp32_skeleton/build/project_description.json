@@ -1,7 +1,7 @@
 {
     "version":            "1.2",
     "project_name":       "esp32_skeleton",
-    "project_version":    "f5c9fbe-dirty",
+    "project_version":    "956cf95-dirty",
     "project_path":       "/Users/stephenschafer/Dev/esp_berryweather/GitHub/BerryWeather/esp32_skeleton",
     "idf_path":           "/Users/stephenschafer/esp/v5.5.1/esp-idf",
     "build_dir":          "/Users/stephenschafer/Dev/esp_berryweather/GitHub/BerryWeather/esp32_skeleton/build",

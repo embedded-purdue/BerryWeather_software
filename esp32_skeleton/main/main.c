@@ -22,7 +22,7 @@ AS7331_Light light;
 
 void app_main(void) {
     // bme688_init();
-    esp_err_t init_check =as7331_init(&sensor);
+    esp_err_t init_check = as7331_init(&sensor);
     if (init_check != ESP_OK) return;
     // soil_moisture_init();
     // rain_sensor_init();
@@ -39,7 +39,12 @@ void app_main(void) {
         // rain_sensor_read(&rain_level);
 
         // ESP_LOGI(TAG, "BME688 -> Temp: %.2f °C, Hum: %.2f %%, Pres: %.2f hPa", temp, hum, pres);
-        ESP_LOGI(TAG, "AS7331 -> Light: %.2f uW/cm²", light);
+        ESP_LOGI(TAG, "AS7331 Raw Counts -> UVA: %u, UVB: %u, UVC: %u", 
+                 sensor.light_reading_raw[0], 
+                 sensor.light_reading_raw[1], 
+                 sensor.light_reading_raw[2]);
+        ESP_LOGI(TAG, "AS7331 Scaled -> UVA: %.2f, UVB: %.2f, UVC: %.2f uW/cm²", 
+                 light.uva, light.uvb, light.uvc);
         // ESP_LOGI(TAG, "DS18B20 -> Soil Temp: %.2f °C", soil_temp);
         // ESP_LOGI(TAG, "Soil Moisture -> Value: %.2f", soil_moisture);
         // ESP_LOGI(TAG, "Rain Sensor -> Level: %.2f", rain_level);
