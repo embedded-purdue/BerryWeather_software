@@ -19,6 +19,7 @@
   "idf.flashType": "UART",
   "files.associations": {
     "cstdint": "c",
-    "compare": "c"
+    "compare": "c",
+    "task.h": "c"
   }
 }

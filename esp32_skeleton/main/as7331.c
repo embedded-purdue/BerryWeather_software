@@ -13,8 +13,9 @@
 #define CREG3_CCLK_VALUE 0x00 // page 56: 00 sets internal clock frequency to 1.024 MHz
 #define CREG1_AS7331 0x06 // page 48: config register for gain and time
 #define CREG1_TIME_GAIN_VALUE_AS7331 0xA7 // page 51: set gain to 2x and time to 128ms
-#define CREG2_AS7331 0x07            // Configuration Register 2
-#define CREG2_VALUE_AS7331 0x00      // Default configuration
+#define CREG2_AS7331 0x07 // Configuration Register 2
+#define CREG2_VALUE_AS7331 0x00 // Default configuration
+#define OUTCONV_REG_AS7331 0x05 // OUTCONV register
 #define I2C_MASTER_SCL 22 // ESP32's SCL pin
 #define I2C_MASTER_SDA 21 // ESP32's SDA pin
 #define UV_MEASUREMENT_START_REG 0x02 // page 59: MRES1 register - ONLY IN MEASUREMENT MODE
@@ -46,46 +47,40 @@ esp_err_t as7331_init(AS7331 *dev) {
     i2c_param_config(I2C_NUM_0, &conf);
     i2c_driver_install(I2C_NUM_0, conf.mode, I2C_MASTER_RX_BUF_DISABLE, I2C_MASTER_TX_BUF_DISABLE, 0);
 
-    // Try to read the status register first to verify I2C communication
+    // Read status register to verify I2C communication
     uint8_t test_status;
     ESP_ERROR_CHECK(i2c_master_write_read_device(I2C_NUM_0, AS7331_ADDR, (uint8_t[]){OPERATIONAL_STATE_REG_AS7331}, 1, &test_status, 1, 1000 / portTICK_PERIOD_MS));
     printf("Initial I2C test successful, can communicate with sensor at address 0x%02X\n", AS7331_ADDR);
     
     // Send reset command
     uint8_t reset_cmd[2] = {OPERATIONAL_STATE_REG_AS7331, RESET_VALUE_AS7331};
-    i2c_master_write_to_device(I2C_NUM_0, AS7331_ADDR, reset_cmd, 2, 1000 / portTICK_PERIOD_MS);
+    ESP_ERROR_CHECK(i2c_master_write_to_device(I2C_NUM_0, AS7331_ADDR, reset_cmd, 2, 1000 / portTICK_PERIOD_MS));
     vTaskDelay(pdMS_TO_TICKS(100));  // Wait for reset to complete
 
-    // Enter config again afer reset
+    // Enter CONFIG mode afer reset
+    uint8_t config_cmd[2] = {OPERATIONAL_STATE_REG_AS7331, CONFIG_VALUE_AS7331};
     ESP_ERROR_CHECK(i2c_master_write_to_device(I2C_NUM_0, AS7331_ADDR, config_cmd, 2, 1000/portTICK_PERIOD_MS));
     vTaskDelay(pdMS_TO_TICKS(20));
-
-    // Verify CONFIG mode
-    ESP_ERROR_CHECK(i2c_master_write_read_device(I2C_NUM_0, AS7331_ADDR, (uint8_t[]){OPERATIONAL_STATE_REG_AS7331}, 1, &status, 1, 1000 / portTICK_PERIOD_MS));
-    printf("Status before reset (should be 0x02): 0x%02X\n", status);
 
     // Configure measurement parameters
     uint8_t meas_config[2] = {CREG1_AS7331, CREG1_TIME_GAIN_VALUE_AS7331};
     ESP_ERROR_CHECK(i2c_master_write_to_device(dev->port, dev->addr, meas_config, 2, 1000 / portTICK_PERIOD_MS));
     vTaskDelay(pdMS_TO_TICKS(20));
     
-    // Configure CREG2 settings (default) - no SYND or 
+    // Configure CREG2 settings (default)
     uint8_t creg2_cmd[2] = {CREG2_AS7331, CREG2_VALUE_AS7331};
-    i2c_master_write_to_device(I2C_NUM_0, AS7331_ADDR, creg2_cmd, 2, 1000 / portTICK_PERIOD_MS);
+    ESP_ERROR_CHECK(i2c_master_write_to_device(I2C_NUM_0, AS7331_ADDR, creg2_cmd, 2, 1000 / portTICK_PERIOD_MS));
     vTaskDelay(pdMS_TO_TICKS(20));
     
     // Configure clock frequency
     uint8_t clock_cmd[2] = {CREG3_AS7331, CREG3_CCLK_VALUE};
-    i2c_master_write_to_device(I2C_NUM_0, AS7331_ADDR, clock_cmd, 2, 1000 / portTICK_PERIOD_MS);
+    ESP_ERROR_CHECK(i2c_master_write_to_device(I2C_NUM_0, AS7331_ADDR, clock_cmd, 2, 1000 / portTICK_PERIOD_MS));
     vTaskDelay(pdMS_TO_TICKS(20));
     
     // 3. Switch to MEASUREMENT mode
     uint8_t meas_cmd[2] = {OPERATIONAL_STATE_REG_AS7331, MEASUREMENT_VALUE_AS7331};
     ESP_ERROR_CHECK(i2c_master_write_to_device(dev->port, dev->addr, meas_cmd, 2, 1000 / portTICK_PERIOD_MS));
     vTaskDelay(pdMS_TO_TICKS(10));
-
-    // Verify MEASUREMENT mode
-    ESP_ERROR_CHECK(AS7331_read_registers(dev, OPERATIONAL_STATE_REG_AS7331, &status, 1));
 
     printf("AS7331 initialized (real hardware)!\n");
     return ESP_OK;
@@ -107,7 +102,7 @@ esp_err_t as7331_read_light(AS7331 *dev, AS7331_Light *light) {
     ESP_ERROR_CHECK(i2c_master_write_to_device(dev->port, dev->addr, trig_cmd, 2, 1000/portTICK_PERIOD_MS));
     vTaskDelay(pdMS_TO_TICKS(150));
 
-    // Now read the measurement registers
+    // Read measurement registers
     uint8_t buf[6];
     ESP_ERROR_CHECK(AS7331_read_registers(dev, UV_MEASUREMENT_START_REG, buf, sizeof(buf)));
     
@@ -126,15 +121,25 @@ esp_err_t as7331_read_light(AS7331 *dev, AS7331_Light *light) {
 
     // Print raw counts for debugging
     printf("Raw counts - UVA: %u, UVB: %u, UVC: %u\n", raw_uva, raw_uvb, raw_uvc);
+
+    // Get integration time in seconds
+    uint8_t outconv_buf[2];
+    ESP_ERROR_CHECK(AS7331_read_registers(dev, OUTCONV_REG_AS7331, outconv_buf, sizeof(outconv_buf)));
+    uint16_t outconv = ((uint16_t)outconv_buf[1] << 8) | outconv_buf[0];
+    float t_int = outconv / 1.024e6f; // clock frequency 1.024 MHz
+    
+    // Get responsivity values for each UV channel
+    float t_ref = 0.064f; // reference conversion time (given on datasheet page 12)
+    float gain_factor = 2.0f; // gain = 2x (datasheet values reflect gain = 1x and integration time = 64ms)
+    float time_factor = t_int / t_ref;
+    float respA = 0.205f * gain_factor * time_factor; // datasheet page 12
+    float respB = 0.157f * gain_factor * time_factor; // datasheet page 12
+    float respC = 0.326f * gain_factor * time_factor; // datasheet page 12
     
     // Convert to physical values (µW/cm²)
-    // AS7331 conversion depends on integration time and gain settings
-    // With 128ms integration time and gain = 2x:
-    const float UV_CONVERSION = 0.0625f; // This is an approximate value, may need calibration
-    
-    light->uva = (float)raw_uva * UV_CONVERSION;
-    light->uvb = (float)raw_uvb * UV_CONVERSION;
-    light->uvc = (float)raw_uvc * UV_CONVERSION;
+    light->uva = (float)raw_uva / respA;
+    light->uvb = (float)raw_uvb / respB;
+    light->uvc = (float)raw_uvc / respC;
     
     // Print converted values
     printf("Converted values - UVA: %.2f, UVB: %.2f, UVC: %.2f µW/cm²\n",
