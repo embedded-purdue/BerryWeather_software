@@ -7,4 +7,4 @@
 void soil_moisture_init(void);
 void soil_moisture_read(float *soil_moisture);
 
-#endif // SOIL_MOISTURE_H
+#endif // SOIL_MOISTURE_Hcd

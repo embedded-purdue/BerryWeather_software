@@ -18,6 +18,6 @@ void soil_moisture_init(void) {
 
 // Convert raw value to "Soil Moisture Index"
 void soil_moisture_read(float *soil_moisture) {
-    int raw = soil_moisture_read_raw(); // Calls raw value which will range from 0-4095 bits
+    int raw = adc1_get_raw(SOIL_MOISTURE_ADC_CHAN); // Calls raw value which will range from 0-4095 bits
     *soil_moisture = raw * 10 / 4095.0; // Scales from 0 to 10; this is the arbitrary unit of "Soil Moisture Index" that will range from bone-dry to completely saturated
 }
