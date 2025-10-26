@@ -61,15 +61,6 @@ int8_C bme688_read_temperature(float *temp, struct bme68x_data *data, struct bme
     // makes sure pointers we passed are good
     if (!temp || !data || !bme) return BME68X_E_NULL_PTR;
 
-    /*
-    Maybe get rid of this error checking in the two lines below since it is done in the init?
-    Do we need to check every time we read a value? I think that might reduce performance potentially? idrk
-    */ 
-
-    // makes sure operating mode is set properly (again i see this is done in init, do we need to do it here as well?)
-    int8_t rslt = bme68x_set_op_mode(BME68X_FORCED_MODE, bme);
-    if (rslt != BME68X_OK) return rslt;
-
     // zeroes out data (apparently good practice, unless we wanted to keep the last good reading)
     memset(data, 0, sizeof(*data));
 
@@ -95,9 +86,6 @@ int8_C bme688_read_humidity(float *hum, struct bme68x_data *data, struct bme68x_
 
     if (!hum || !data || !bme) return BME68X_E_NULL_PTR;
 
-    int8_t rslt = bme68x_set_op_mode(BME68X_FORCED_MODE, bme);
-    if (rslt != BME68X_OK) return rslt;
-
     memset(data, 0, sizeof(*data));
 
     rslt = read_field_data(0, data, bme);
@@ -114,9 +102,6 @@ int8_C bme688_read_humidity(float *hum, struct bme68x_data *data, struct bme68x_
 int8_C bme688_read_pressure(float *pres, struct bme68x_data *data, struct bme68x_dev *bme){
 
     if (!pres || !data || !bme) return BME68X_E_NULL_PTR;
-
-    int8_t rslt = bme68x_set_op_mode(BME68X_FORCED_MODE, bme);
-    if (rslt != BME68X_OK) return rslt;
 
     memset(data, 0, sizeof(*data));
 
