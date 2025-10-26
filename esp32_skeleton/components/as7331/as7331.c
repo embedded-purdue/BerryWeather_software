@@ -105,10 +105,6 @@ esp_err_t as7331_read_light(AS7331 *dev, AS7331_Light *light) {
     // Read measurement registers
     uint8_t buf[6];
     ESP_ERROR_CHECK(AS7331_read_registers(dev, UV_MEASUREMENT_START_REG, buf, sizeof(buf)));
-    
-    // Debug print raw values
-    printf("Raw register values: 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X\n",
-           buf[0], buf[1], buf[2], buf[3], buf[4], buf[5]);
 
     uint16_t raw_uva = ((uint16_t)buf[1] << 8) | buf[0];
     uint16_t raw_uvb = ((uint16_t)buf[3] << 8) | buf[2];
@@ -118,9 +114,6 @@ esp_err_t as7331_read_light(AS7331 *dev, AS7331_Light *light) {
     dev->light_reading_raw[0] = raw_uva;
     dev->light_reading_raw[1] = raw_uvb;
     dev->light_reading_raw[2] = raw_uvc;
-
-    // Print raw counts for debugging
-    printf("Raw counts - UVA: %u, UVB: %u, UVC: %u\n", raw_uva, raw_uvb, raw_uvc);
 
     // Get integration time in seconds
     uint8_t outconv_buf[2];
@@ -140,10 +133,6 @@ esp_err_t as7331_read_light(AS7331 *dev, AS7331_Light *light) {
     light->uva = (float)raw_uva / respA;
     light->uvb = (float)raw_uvb / respB;
     light->uvc = (float)raw_uvc / respC;
-    
-    // Print converted values
-    printf("Converted values - UVA: %.2f, UVB: %.2f, UVC: %.2f µW/cm²\n",
-           light->uva, light->uvb, light->uvc);
 
     return ESP_OK; // successful transaction
 }

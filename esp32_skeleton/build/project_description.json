@@ -1,7 +1,7 @@
 {
     "version":            "1.2",
     "project_name":       "esp32_skeleton",
-    "project_version":    "99952f2-dirty",
+    "project_version":    "140e3ab-dirty",
     "project_path":       "/Users/stephenschafer/Dev/esp_berryweather/GitHub/BerryWeather/esp32_skeleton",
     "idf_path":           "/Users/stephenschafer/esp/v5.5.1/esp-idf",
     "build_dir":          "/Users/stephenschafer/Dev/esp_berryweather/GitHub/BerryWeather/esp32_skeleton/build",
@@ -25,8 +25,8 @@
         "COMPONENT_KCONFIGS_PROJBUILD" : "/Users/stephenschafer/esp/v5.5.1/esp-idf/components/bootloader/Kconfig.projbuild;/Users/stephenschafer/esp/v5.5.1/esp-idf/components/esp_app_format/Kconfig.projbuild;/Users/stephenschafer/esp/v5.5.1/esp-idf/components/esp_rom/Kconfig.projbuild;/Users/stephenschafer/esp/v5.5.1/esp-idf/components/esptool_py/Kconfig.projbuild;/Users/stephenschafer/esp/v5.5.1/esp-idf/components/partition_table/Kconfig.projbuild"
     },
     "common_component_reqs": [ "cxx", "newlib", "freertos", "esp_hw_support", "heap", "log", "soc", "hal", "esp_rom", "esp_common", "esp_system", "xtensa" ],
-    "build_components" : [ "app_update", "bootloader", "bootloader_support", "cxx", "driver", "efuse", "esp_app_format", "esp_bootloader_format", "esp_common", "esp_driver_ana_cmpr", "esp_driver_bitscrambler", "esp_driver_dac", "esp_driver_gpio", "esp_driver_gptimer", "esp_driver_i2c", "esp_driver_i2s", "esp_driver_ledc", "esp_driver_mcpwm", "esp_driver_parlio", "esp_driver_pcnt", "esp_driver_rmt", "esp_driver_sdio", "esp_driver_sdm", "esp_driver_sdmmc", "esp_driver_sdspi", "esp_driver_spi", "esp_driver_tsens", "esp_driver_twai", "esp_driver_uart", "esp_driver_usb_serial_jtag", "esp_hw_support", "esp_mm", "esp_partition", "esp_pm", "esp_ringbuf", "esp_rom", "esp_security", "esp_system", "esp_timer", "esptool_py", "freertos", "hal", "heap", "log", "main", "mbedtls", "newlib", "partition_table", "pthread", "sdmmc", "soc", "spi_flash", "xtensa", "" ],
-    "build_component_paths" : [ "/Users/stephenschafer/esp/v5.5.1/esp-idf/components/app_update", "/Users/stephenschafer/esp/v5.5.1/esp-idf/components/bootloader", "/Users/stephenschafer/esp/v5.5.1/esp-idf/components/bootloader_support", "/Users/stephenschafer/esp/v5.5.1/esp-idf/components/cxx", "/Users/stephenschafer/esp/v5.5.1/esp-idf/components/driver", "/Users/stephenschafer/esp/v5.5.1/esp-idf/components/efuse", "/Users/stephenschafer/esp/v5.5.1/esp-idf/components/esp_app_format", "/Users/stephenschafer/esp/v5.5.1/esp-idf/components/esp_bootloader_format", "/Users/stephenschafer/esp/v5.5.1/esp-idf/components/esp_common", "/Users/stephenschafer/esp/v5.5.1/esp-idf/components/esp_driver_ana_cmpr", "/Users/stephenschafer/esp/v5.5.1/esp-idf/components/esp_driver_bitscrambler", "/Users/stephenschafer/esp/v5.5.1/esp-idf/components/esp_driver_dac", "/Users/stephenschafer/esp/v5.5.1/esp-idf/components/esp_driver_gpio", "/Users/stephenschafer/esp/v5.5.1/esp-idf/components/esp_driver_gptimer", "/Users/stephenschafer/esp/v5.5.1/esp-idf/components/esp_driver_i2c", "/Users/stephenschafer/esp/v5.5.1/esp-idf/components/esp_driver_i2s", "/Users/stephenschafer/esp/v5.5.1/esp-idf/components/esp_driver_ledc", "/Users/stephenschafer/esp/v5.5.1/esp-idf/components/esp_driver_mcpwm", "/Users/stephenschafer/esp/v5.5.1/esp-idf/components/esp_driver_parlio", "/Users/stephenschafer/esp/v5.5.1/esp-idf/components/esp_driver_pcnt", "/Users/stephenschafer/esp/v5.5.1/esp-idf/components/esp_driver_rmt", "/Users/stephenschafer/esp/v5.5.1/esp-idf/components/esp_driver_sdio", "/Users/stephenschafer/esp/v5.5.1/esp-idf/components/esp_driver_sdm", "/Users/stephenschafer/esp/v5.5.1/esp-idf/components/esp_driver_sdmmc", "/Users/stephenschafer/esp/v5.5.1/esp-idf/components/esp_driver_sdspi", "/Users/stephenschafer/esp/v5.5.1/esp-idf/components/esp_driver_spi", "/Users/stephenschafer/esp/v5.5.1/esp-idf/components/esp_driver_tsens", "/Users/stephenschafer/esp/v5.5.1/esp-idf/components/esp_driver_twai", "/Users/stephenschafer/esp/v5.5.1/esp-idf/components/esp_driver_uart", "/Users/stephenschafer/esp/v5.5.1/esp-idf/components/esp_driver_usb_serial_jtag", "/Users/stephenschafer/esp/v5.5.1/esp-idf/components/esp_hw_support", "/Users/stephenschafer/esp/v5.5.1/esp-idf/components/esp_mm", "/Users/stephenschafer/esp/v5.5.1/esp-idf/components/esp_partition", "/Users/stephenschafer/esp/v5.5.1/esp-idf/components/esp_pm", "/Users/stephenschafer/esp/v5.5.1/esp-idf/components/esp_ringbuf", "/Users/stephenschafer/esp/v5.5.1/esp-idf/components/esp_rom", "/Users/stephenschafer/esp/v5.5.1/esp-idf/components/esp_security", "/Users/stephenschafer/esp/v5.5.1/esp-idf/components/esp_system", "/Users/stephenschafer/esp/v5.5.1/esp-idf/components/esp_timer", "/Users/stephenschafer/esp/v5.5.1/esp-idf/components/esptool_py", "/Users/stephenschafer/esp/v5.5.1/esp-idf/components/freertos", "/Users/stephenschafer/esp/v5.5.1/esp-idf/components/hal", "/Users/stephenschafer/esp/v5.5.1/esp-idf/components/heap", "/Users/stephenschafer/esp/v5.5.1/esp-idf/components/log", "/Users/stephenschafer/Dev/esp_berryweather/GitHub/BerryWeather/esp32_skeleton/main", "/Users/stephenschafer/esp/v5.5.1/esp-idf/components/mbedtls", "/Users/stephenschafer/esp/v5.5.1/esp-idf/components/newlib", "/Users/stephenschafer/esp/v5.5.1/esp-idf/components/partition_table", "/Users/stephenschafer/esp/v5.5.1/esp-idf/components/pthread", "/Users/stephenschafer/esp/v5.5.1/esp-idf/components/sdmmc", "/Users/stephenschafer/esp/v5.5.1/esp-idf/components/soc", "/Users/stephenschafer/esp/v5.5.1/esp-idf/components/spi_flash", "/Users/stephenschafer/esp/v5.5.1/esp-idf/components/xtensa", "" ],
+    "build_components" : [ "app_update", "as7331", "bootloader", "bootloader_support", "cxx", "driver", "efuse", "esp_app_format", "esp_bootloader_format", "esp_common", "esp_driver_ana_cmpr", "esp_driver_bitscrambler", "esp_driver_dac", "esp_driver_gpio", "esp_driver_gptimer", "esp_driver_i2c", "esp_driver_i2s", "esp_driver_ledc", "esp_driver_mcpwm", "esp_driver_parlio", "esp_driver_pcnt", "esp_driver_rmt", "esp_driver_sdio", "esp_driver_sdm", "esp_driver_sdmmc", "esp_driver_sdspi", "esp_driver_spi", "esp_driver_tsens", "esp_driver_twai", "esp_driver_uart", "esp_driver_usb_serial_jtag", "esp_hw_support", "esp_mm", "esp_partition", "esp_pm", "esp_ringbuf", "esp_rom", "esp_security", "esp_system", "esp_timer", "esptool_py", "freertos", "hal", "heap", "log", "main", "mbedtls", "newlib", "partition_table", "pthread", "sdmmc", "soc", "spi_flash", "xtensa", "" ],
+    "build_component_paths" : [ "/Users/stephenschafer/esp/v5.5.1/esp-idf/components/app_update", "/Users/stephenschafer/Dev/esp_berryweather/GitHub/BerryWeather/esp32_skeleton/components/as7331", "/Users/stephenschafer/esp/v5.5.1/esp-idf/components/bootloader", "/Users/stephenschafer/esp/v5.5.1/esp-idf/components/bootloader_support", "/Users/stephenschafer/esp/v5.5.1/esp-idf/components/cxx", "/Users/stephenschafer/esp/v5.5.1/esp-idf/components/driver", "/Users/stephenschafer/esp/v5.5.1/esp-idf/components/efuse", "/Users/stephenschafer/esp/v5.5.1/esp-idf/components/esp_app_format", "/Users/stephenschafer/esp/v5.5.1/esp-idf/components/esp_bootloader_format", "/Users/stephenschafer/esp/v5.5.1/esp-idf/components/esp_common", "/Users/stephenschafer/esp/v5.5.1/esp-idf/components/esp_driver_ana_cmpr", "/Users/stephenschafer/esp/v5.5.1/esp-idf/components/esp_driver_bitscrambler", "/Users/stephenschafer/esp/v5.5.1/esp-idf/components/esp_driver_dac", "/Users/stephenschafer/esp/v5.5.1/esp-idf/components/esp_driver_gpio", "/Users/stephenschafer/esp/v5.5.1/esp-idf/components/esp_driver_gptimer", "/Users/stephenschafer/esp/v5.5.1/esp-idf/components/esp_driver_i2c", "/Users/stephenschafer/esp/v5.5.1/esp-idf/components/esp_driver_i2s", "/Users/stephenschafer/esp/v5.5.1/esp-idf/components/esp_driver_ledc", "/Users/stephenschafer/esp/v5.5.1/esp-idf/components/esp_driver_mcpwm", "/Users/stephenschafer/esp/v5.5.1/esp-idf/components/esp_driver_parlio", "/Users/stephenschafer/esp/v5.5.1/esp-idf/components/esp_driver_pcnt", "/Users/stephenschafer/esp/v5.5.1/esp-idf/components/esp_driver_rmt", "/Users/stephenschafer/esp/v5.5.1/esp-idf/components/esp_driver_sdio", "/Users/stephenschafer/esp/v5.5.1/esp-idf/components/esp_driver_sdm", "/Users/stephenschafer/esp/v5.5.1/esp-idf/components/esp_driver_sdmmc", "/Users/stephenschafer/esp/v5.5.1/esp-idf/components/esp_driver_sdspi", "/Users/stephenschafer/esp/v5.5.1/esp-idf/components/esp_driver_spi", "/Users/stephenschafer/esp/v5.5.1/esp-idf/components/esp_driver_tsens", "/Users/stephenschafer/esp/v5.5.1/esp-idf/components/esp_driver_twai", "/Users/stephenschafer/esp/v5.5.1/esp-idf/components/esp_driver_uart", "/Users/stephenschafer/esp/v5.5.1/esp-idf/components/esp_driver_usb_serial_jtag", "/Users/stephenschafer/esp/v5.5.1/esp-idf/components/esp_hw_support", "/Users/stephenschafer/esp/v5.5.1/esp-idf/components/esp_mm", "/Users/stephenschafer/esp/v5.5.1/esp-idf/components/esp_partition", "/Users/stephenschafer/esp/v5.5.1/esp-idf/components/esp_pm", "/Users/stephenschafer/esp/v5.5.1/esp-idf/components/esp_ringbuf", "/Users/stephenschafer/esp/v5.5.1/esp-idf/components/esp_rom", "/Users/stephenschafer/esp/v5.5.1/esp-idf/components/esp_security", "/Users/stephenschafer/esp/v5.5.1/esp-idf/components/esp_system", "/Users/stephenschafer/esp/v5.5.1/esp-idf/components/esp_timer", "/Users/stephenschafer/esp/v5.5.1/esp-idf/components/esptool_py", "/Users/stephenschafer/esp/v5.5.1/esp-idf/components/freertos", "/Users/stephenschafer/esp/v5.5.1/esp-idf/components/hal", "/Users/stephenschafer/esp/v5.5.1/esp-idf/components/heap", "/Users/stephenschafer/esp/v5.5.1/esp-idf/components/log", "/Users/stephenschafer/Dev/esp_berryweather/GitHub/BerryWeather/esp32_skeleton/main", "/Users/stephenschafer/esp/v5.5.1/esp-idf/components/mbedtls", "/Users/stephenschafer/esp/v5.5.1/esp-idf/components/newlib", "/Users/stephenschafer/esp/v5.5.1/esp-idf/components/partition_table", "/Users/stephenschafer/esp/v5.5.1/esp-idf/components/pthread", "/Users/stephenschafer/esp/v5.5.1/esp-idf/components/sdmmc", "/Users/stephenschafer/esp/v5.5.1/esp-idf/components/soc", "/Users/stephenschafer/esp/v5.5.1/esp-idf/components/spi_flash", "/Users/stephenschafer/esp/v5.5.1/esp-idf/components/xtensa", "" ],
     "build_component_info" : {
         "app_update": {
             "alias": "idf::app_update",
@@ -41,6 +41,21 @@
             "managed_priv_reqs": [],
             "file": "/Users/stephenschafer/Dev/esp_berryweather/GitHub/BerryWeather/esp32_skeleton/build/esp-idf/app_update/libapp_update.a",
             "sources": [ "/Users/stephenschafer/esp/v5.5.1/esp-idf/components/app_update/esp_ota_ops.c", "/Users/stephenschafer/esp/v5.5.1/esp-idf/components/app_update/esp_ota_app_desc.c" ],
+            "include_dirs": [ "include" ]
+        },
+        "as7331": {
+            "alias": "idf::as7331",
+            "target": "___idf_as7331",
+            "prefix": "idf",
+            "dir": "/Users/stephenschafer/Dev/esp_berryweather/GitHub/BerryWeather/esp32_skeleton/components/as7331",
+            "type": "LIBRARY",
+            "lib": "__idf_as7331",
+            "reqs": [ "driver" ],
+            "priv_reqs": [],
+            "managed_reqs": [],
+            "managed_priv_reqs": [],
+            "file": "/Users/stephenschafer/Dev/esp_berryweather/GitHub/BerryWeather/esp32_skeleton/build/esp-idf/as7331/libas7331.a",
+            "sources": [ "/Users/stephenschafer/Dev/esp_berryweather/GitHub/BerryWeather/esp32_skeleton/components/as7331/as7331.c" ],
             "include_dirs": [ "include" ]
         },
         "bootloader": {
@@ -696,11 +711,11 @@
             "type": "LIBRARY",
             "lib": "__idf_main",
             "reqs": [],
-            "priv_reqs": [ "spi_flash", "driver" ],
+            "priv_reqs": [ "as7331", "spi_flash", "driver" ],
             "managed_reqs": [],
             "managed_priv_reqs": [],
             "file": "/Users/stephenschafer/Dev/esp_berryweather/GitHub/BerryWeather/esp32_skeleton/build/esp-idf/main/libmain.a",
-            "sources": [ "/Users/stephenschafer/Dev/esp_berryweather/GitHub/BerryWeather/esp32_skeleton/main/as7331.c", "/Users/stephenschafer/Dev/esp_berryweather/GitHub/BerryWeather/esp32_skeleton/main/main.c" ],
+            "sources": [ "/Users/stephenschafer/Dev/esp_berryweather/GitHub/BerryWeather/esp32_skeleton/main/main.c" ],
             "include_dirs": []
         },
         "mbedtls": {
@@ -2128,10 +2143,22 @@
             "dir": "/Users/stephenschafer/Dev/esp_berryweather/GitHub/BerryWeather/esp32_skeleton/main",
             "lib": "__idf_main",
             "reqs": [],
-            "priv_reqs": [ "spi_flash", "driver" ],
+            "priv_reqs": [ "as7331", "spi_flash", "driver" ],
             "managed_reqs": [],
             "managed_priv_reqs": [],
             "include_dirs": []
+        },
+        "as7331": {
+            "alias": "idf::as7331",
+            "target": "___idf_as7331",
+            "prefix": "idf",
+            "dir": "/Users/stephenschafer/Dev/esp_berryweather/GitHub/BerryWeather/esp32_skeleton/components/as7331",
+            "lib": "__idf_as7331",
+            "reqs": [ "driver" ],
+            "priv_reqs": [],
+            "managed_reqs": [],
+            "managed_priv_reqs": [],
+            "include_dirs": [ "include" ]
         }
     },
     "debug_prefix_map_gdbinit": "",

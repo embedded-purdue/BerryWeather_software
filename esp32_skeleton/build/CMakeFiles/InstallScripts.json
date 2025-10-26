@@ -67,6 +67,7 @@
 		"/Users/stephenschafer/Dev/esp_berryweather/GitHub/BerryWeather/esp32_skeleton/build/esp-idf/esp_driver_usb_serial_jtag/cmake_install.cmake",
 		"/Users/stephenschafer/Dev/esp_berryweather/GitHub/BerryWeather/esp32_skeleton/build/esp-idf/esp_driver_twai/cmake_install.cmake",
 		"/Users/stephenschafer/Dev/esp_berryweather/GitHub/BerryWeather/esp32_skeleton/build/esp-idf/driver/cmake_install.cmake",
+		"/Users/stephenschafer/Dev/esp_berryweather/GitHub/BerryWeather/esp32_skeleton/build/esp-idf/as7331/cmake_install.cmake",
 		"/Users/stephenschafer/Dev/esp_berryweather/GitHub/BerryWeather/esp32_skeleton/build/esp-idf/main/cmake_install.cmake"
 	],
 	"Parallel" : false

@@ -1,3 +1,3 @@
-idf_component_register(SRCS "as7331.c" "main.c"
-                       PRIV_REQUIRES spi_flash driver
+idf_component_register(SRCS "main.c"
+                       PRIV_REQUIRES as7331 spi_flash driver
                        INCLUDE_DIRS "")
