@@ -51,67 +51,53 @@ void bme688_init(void) {
     printf("BME688 initialized (real hardware)!\n");
 }
 
-int8_C bme688_read_temperature(float *temp, struct bme68x_data *data, struct bme68x_dev *bme){
-    /*
-    I see that in main.c this function is used as a void return type, so should we get rid of the 
-    status codes that we are returning? Or should we change main.c to be able to utilize these codes?
-    For now I am leaving the status codes in.
-    */ 
 
-    // makes sure pointers we passed are good
+
+int8_t bme688_read_temperature(float *temp, struct bme68x_data *data, struct bme68x_dev *bme)
+{
     if (!temp || !data || !bme) return BME68X_E_NULL_PTR;
 
-    // zeroes out data (apparently good practice, unless we wanted to keep the last good reading)
-    memset(data, 0, sizeof(*data));
+    uint8_t n_data = 0;
+    *temp = 0.0f;
+    memset(data, 0, sizeof(*data)); // okay for forced mode
 
-    // reads field data into data struct
-    rslt = read_field_data(0, data, bme);
-    if (rslt != BME68X_OK) return rslt;
+    int8_t rslt = bme68x_get_data(BME68X_FORCED_MODE, data, &n_data, bme);
+    if (rslt < 0) return rslt;           // hard error from bus/driver
+    if (n_data == 0) return BME68X_W_NO_NEW_DATA;
 
-    // more error checking
-    if ((data->status & BME68X_NEW_DATA_MSK) == 0)
-        return BME68X_E_COM_FAIL;
-
-    // writes temp data to pointer we passed
     *temp = data->temperature;
     return BME68X_OK;
-    
 }
 
-
-// For the humidity and pressure functions i thought it was the same thing except we are
-// doing data->humidity/pressure rather than data->temperature but idk if that's right
-
-int8_C bme688_read_humidity(float *hum, struct bme68x_data *data, struct bme68x_dev *bme){
-
-    if (!hum || !data || !bme) return BME68X_E_NULL_PTR;
-
-    memset(data, 0, sizeof(*data));
-
-    rslt = read_field_data(0, data, bme);
-    if (rslt != BME68X_OK) return rslt;
-
-    if ((data->status & BME68X_NEW_DATA_MSK) == 0)
-        return BME68X_E_COM_FAIL;
-
-    *hum = data->humidity;
-    return BME68X_OK;
-    
-}
-
-int8_C bme688_read_pressure(float *pres, struct bme68x_data *data, struct bme68x_dev *bme){
-
+int8_t bme688_read_pressure(float *pres, struct bme68x_data *data, struct bme68x_dev *bme)
+{
     if (!pres || !data || !bme) return BME68X_E_NULL_PTR;
 
+    uint8_t n_data = 0;
+    *pres = 0.0f;
     memset(data, 0, sizeof(*data));
 
-    rslt = read_field_data(0, data, bme);
-    if (rslt != BME68X_OK) return rslt;
-
-    if ((data->status & BME68X_NEW_DATA_MSK) == 0)
-        return BME68X_E_COM_FAIL;
+    int8_t rslt = bme68x_get_data(BME68X_FORCED_MODE, data, &n_data, bme);
+    if (rslt < 0) return rslt;  
+    if (n_data == 0) return BME68X_W_NO_NEW_DATA;
 
     *pres = data->pressure;
     return BME68X_OK;
-    
 }
+
+int8_t bme688_read_humidity(float *hum, struct bme68x_data *data, struct bme68x_dev *bme)
+{
+    if (!hum || !data || !bme) return BME68X_E_NULL_PTR;
+
+    uint8_t n_data = 0;
+    *hum = 0.0f;
+    memset(data, 0, sizeof(*data)); 
+
+    int8_t rslt = bme68x_get_data(BME68X_FORCED_MODE, data, &n_data, bme);
+    if (rslt < 0) return rslt;  
+    if (n_data == 0) return BME68X_W_NO_NEW_DATA;
+
+    *hum = data->humidity;
+    return BME68X_OK;
+}
+

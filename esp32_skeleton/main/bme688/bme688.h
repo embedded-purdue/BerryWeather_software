@@ -1,9 +1,35 @@
 #ifndef BME688_H
 #define BME688_H
 
-// Initializes the BME688 sensor
+#include <stdint.h>
+#include "bme68x.h"
+
 void bme688_init(void);
 
-// INCLUDE THE REST OF THE FUNCTIONS BELOW
+/* Read temperature (°C) in FORCED mode.
+ * Returns: BME68X_OK on success,
+ *          BME68X_W_NO_NEW_DATA if nothing fresh,
+ *          <0 on error.
+ */
+int8_t bme688_read_temperature(float *temp,
+                               struct bme68x_data *data,
+                               struct bme68x_dev *bme);
 
-#endif // BME688_H
+/* Read pressure (Pa) in FORCED mode. */
+int8_t bme688_read_pressure(float *pres,
+                            struct bme68x_data *data,
+                            struct bme68x_dev *bme);
+
+/* Read relative humidity (%) in FORCED mode. */
+int8_t bme688_read_humidity(float *hum,
+                            struct bme68x_data *data,
+                            struct bme68x_dev *bme);
+
+/* Usage notes:
+ * - These helpers assume BME68X_FORCED_MODE.
+ * - `data` must point to one struct for forced mode.
+ * - If BME68X_W_NO_NEW_DATA, trigger a new forced measurement and retry.
+ * - For PARALLEL/SEQUENTIAL, call bme68x_get_data() with an array[3].
+ */
+
+#endif /* BME688_H */
