@@ -17,6 +17,9 @@
 
 static const char *TAG = "MAIN";
 
+struct bme68x_data data;
+struct bme68x_dev bme;
+
 void app_main(void) {
     bme688_init();
     /*as7331_init();
@@ -27,9 +30,9 @@ void app_main(void) {
     while (1) {
         float temp, hum, pres, light, soil_temp, soil_moisture, rain_level;
 
-        bme688_read_temperature(&temp);
-        bme688_read_humidity(&hum);
-        bme688_read_pressure(&pres);
+        bme688_read_temperature(&temp, &data, &bme);
+        bme688_read_humidity(&hum, &data, &bme);
+        bme688_read_pressure(&pres, &data, &bme);
         /*as7331_read_light(&light);
         ds18b20_read_temperature(&soil_temp);
         soil_moisture_read(&soil_moisture);

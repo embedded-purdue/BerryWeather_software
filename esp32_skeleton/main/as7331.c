@@ -3,9 +3,9 @@
 #include <stdio.h>
 #include "driver/i2c.h"
 
-#define AS7331_ADDR 0xXX // Replace with your AS7331 sensor's I2C address
-#define RESET_REG_AS7331 0xXX
-#define RESET_VALUE_AS7331 0xXX
+#define AS7331_ADDR 0x01 // Replace with your AS7331 sensor's I2C address
+#define RESET_REG_AS7331 0x02
+#define RESET_VALUE_AS7331 0x03 // Dummy values lol
 
 void as7331_init(void) {
     // 1. (Optional) Initialize I2C bus here if not done elsewhere

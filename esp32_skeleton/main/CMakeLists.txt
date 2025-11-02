@@ -1,3 +1,3 @@
-idf_component_register(SRCS "bme68x.c" "bme688.c" "main.c"
-                       PRIV_REQUIRES spi_flash
-                       INCLUDE_DIRS "")
+idf_component_register(SRCS "main.c" "as7331.c" "ds18b20.c" "rain_sensor.c" "soil_moisture.c"
+                       PRIV_REQUIRES spi_flash bme688
+                       INCLUDE_DIRS ".")
