@@ -35,52 +35,60 @@ void periodic_sensor_task(void *arg)
     
     printf("Starting periodic sensor task. Sending every %d minutes.\n", SEND_INTERVAL_MINUTES);
 
-    while(1)
-    {
-        // 1. Read data from sensors
-        float temperature = get_temp_data();
-        int humidity = get_humidity_data();
-        float pressure = get_pressure_data();
-        float uv_index = get_uv_data();
+    // 1. Read data from sensors
+    float temperature = get_temp_data();
+    int humidity = get_humidity_data();
+    float pressure = get_pressure_data();
+    float uv_index = get_uv_data();
 
-        // 2. Create the JSON payload
-        char json_payload[128];
-        snprintf(json_payload, sizeof(json_payload),
-                "{\"t\":%.1f,\"h\":%d,\"p\":%.1f,\"uv\":%.1f}",
-                temperature, humidity, pressure, uv_index);
+    // 2. Create the JSON payload
+    char json_payload[128];
+    snprintf(json_payload, sizeof(json_payload),
+            "{\"t\":%.1f,\"h\":%d,\"p\":%.1f,\"uv\":%.1f}",
+            temperature, humidity, pressure, uv_index);
 
-        printf("----------------------------------\n");
-        printf("Reading sensors and sending data...\n");
-        printf("Payload: %s\n", json_payload);
-        
-        // 3. Send the JSON payload via LoRa
+    printf("----------------------------------\n");
+    printf("Reading sensors and sending data...\n");
+    printf("Payload: %s\n", json_payload);
+    
+    lora_send_message(MM_ADDR, json_payload);
+    printf("Waiting for data ACK from MiddleMan...\n");
+    
+    char rx_buf[128];
+    bool ack_received = false;
+    
+    for (int attempt = 0; attempt < 3; attempt++) {
+        if (lora_wait_for_message(rx_buf, sizeof(rx_buf), 6000)) {
+            if (strstr(rx_buf, "MM_ACK_DATA")) {
+                printf("ACK received from MiddleMan!\n");
+                ack_received = true;
+                break;
+            }
+        }
+        printf("No ACK, retrying send (%d/3)...\n", attempt + 1);
         lora_send_message(MM_ADDR, json_payload);
-
-        // 4. Go to sleep
-        printf("Data sent. Entering deep sleep for %d minutes.\n", SEND_INTERVAL_MINUTES);
-        
-        // Flush UART buffer before sleeping
-        uart_wait_tx_done(LORA_UART_PORT, pdMS_TO_TICKS(1000));
-        vTaskDelay(pdMS_TO_TICKS(500));
-
-        // Configure deep sleep
-        esp_sleep_enable_timer_wakeup(SEND_INTERVAL_US);
-        
-        // Enter deep sleep
-        // The device will restart from app_main after waking up.
-        esp_deep_sleep_start();
-
-        /*
-        // --- OR ---
-        // If you don't want deep sleep, you can use vTaskDelay.
-        // This keeps the ESP32 powered on but pauses the task.
-        // It uses much more power than deep sleep.
-        
-        printf("Data sent. Delaying task for %d minutes.\n", SEND_INTERVAL_MINUTES);
-        printf("----------------------------------\n");
-        vTaskDelay(pdMS_TO_TICKS(SEND_INTERVAL_MINUTES * 60 * 1000));
-        */
     }
+    
+    // 4. Sleep if ACK or after max retries
+    if (!ack_received)
+        printf("No ACK from MiddleMan, going to sleep anyway.\n");
+    
+    uart_wait_tx_done(LORA_UART_PORT, pdMS_TO_TICKS(1000));
+    vTaskDelay(pdMS_TO_TICKS(500));
+    
+    esp_sleep_enable_timer_wakeup(SEND_INTERVAL_US);
+    esp_deep_sleep_start();
+
+    /*
+    // --- OR ---
+    // If you don't want deep sleep, you can use vTaskDelay.
+    // This keeps the ESP32 powered on but pauses the task.
+    // It uses much more power than deep sleep.
+    
+    printf("Data sent. Delaying task for %d minutes.\n", SEND_INTERVAL_MINUTES);
+    printf("----------------------------------\n");
+    vTaskDelay(pdMS_TO_TICKS(SEND_INTERVAL_MINUTES * 60 * 1000));
+    */
 }
 
 void app_main(void)
@@ -98,15 +106,12 @@ void app_main(void)
     printf("Setting up LoRa module...\n");
     lora_common_setup(SAT_ADDR); 
 
-    // 3. Send a one-time "boot" test message
-    printf("Sending boot-up test message...\n");
-    lora_send_message(MM_ADDR, "SATELLITE_BOOT_OK");
-    vTaskDelay(pdMS_TO_TICKS(2000)); // Give time for message to send
-
-    // 4. Start the main periodic sensor task
-    // Since we are using deep sleep, the task doesn't need to be in a loop
-    // and we can just call the "do work" part.
-    // If NOT using deep sleep, create a persistent task:
+    printf("Performing LoRa boot handshake...\n");
+    if (lora_boot_handshake(false, MM_ADDR)) {
+        printf("Handshake successful! Starting periodic task.\n");
+    } else {
+        printf("Handshake failed. Continuing anyway.\n");
+    }
     xTaskCreate(periodic_sensor_task, "periodic_sensor_task", 4096, NULL, 5, NULL);
 
     // If using deep sleep, the code in periodic_sensor_task will run,

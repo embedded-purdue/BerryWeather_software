@@ -16,6 +16,8 @@
 #include "lora_comm.h" 
 // --- MiddleMan Specific Configuration ---
 #define MM_ADDR 1 // This MiddleMan's address
+#define SAT_ADDR 10 // This satellite's address
+
 
 // Set to 1 to build the minimal LoRa-only listener
 // Set to 0 to build the full Wi-Fi + MQTT application
@@ -58,6 +60,14 @@ void lora_simple_listen_task(void *arg)
         if (len > 0) {
             data[len] = '\0'; // Null-terminate the received string
             ESP_LOGI(TAG, "LoRa Received: %s", data);
+        }
+
+        if (strstr((char*)data, "+RCV=")) {
+            int sender_addr = 10; // extract dynamically if multiple satellites
+            // After parsing JSON
+            ESP_LOGI(TAG, "Data received from satellite %d: %s", sender_addr, data);
+            lora_send_message(sender_addr, "MM_ACK_DATA");
+            ESP_LOGI(TAG, "ACK sent to satellite %d.", sender_addr);
         }
     }
     free(data);
@@ -409,9 +419,13 @@ void app_main(void)
     ESP_LOGI(TAG, "Setting up LoRa module...\n");
     lora_common_setup(MM_ADDR); 
 
-    // 3. Start the simple listen task
+    ESP_LOGI(TAG, "Performing LoRa boot handshake...");
+    if (lora_boot_handshake(true, SAT_ADDR)) {
+        ESP_LOGI(TAG, " Handshake successful with satellite 10!");
+    } else {
+        ESP_LOGW(TAG, " Handshake timeout. Starting listen mode anyway.");
+    }
     xTaskCreate(lora_simple_listen_task, "lora_simple_listen_task", 4096, NULL, 5, NULL);
-
     ESP_LOGI(TAG, "Listening on UART %d", LORA_UART_PORT);
 
 #else

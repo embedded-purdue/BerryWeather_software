@@ -5,6 +5,8 @@
 #include "driver/gpio.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+#include "esp_log.h"
+
 
 // --- Configuration ---
 #define LORA_UART_PORT      UART_NUM_1
@@ -43,5 +45,8 @@ void lora_common_setup(int addr);
  * @param message The data payload to send.
  */
 void lora_send_message(uint8_t address, const char* message);
+
+bool lora_boot_handshake(bool is_middleman, uint8_t peer_addr);
+bool lora_wait_for_message(char *buf, size_t len, uint32_t timeout_ms);
 
 #endif // LORA_COMM_H

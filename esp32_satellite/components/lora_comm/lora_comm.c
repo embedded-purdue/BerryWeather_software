@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdio.h>
 
+static const char *TAG = "lora_comm";
 void lora_send_cmd_and_print(const char *s) {
     uart_write_bytes(LORA_UART_PORT, s, strlen(s));
     printf("Sent: %s", s);
@@ -13,6 +14,75 @@ void lora_send_cmd_and_print(const char *s) {
         printf("Received: %s\n", rx); 
     } else {
         printf("Received: (timeout)\n");
+    }
+}
+
+
+/**
+ * @brief Waits for any LoRa UART message.
+ */
+bool lora_wait_for_message(char *buf, size_t len, uint32_t timeout_ms)
+{
+    int n = uart_read_bytes(LORA_UART_PORT, (uint8_t*)buf, len - 1, pdMS_TO_TICKS(timeout_ms));
+    if (n > 0) {
+        buf[n] = '\0';
+        ESP_LOGI(TAG, "LoRa RX: %s", buf);
+        return true;
+    }
+    return false;
+}
+
+/**
+ * @brief Handles handshake between Satellite and MiddleMan at startup.
+ * @param is_middleman true if this node is the MiddleMan, false if Satellite
+ * @param peer_addr The LoRa address of the other device
+ * @return true if handshake succeeded, false if timed out
+ */
+bool lora_boot_handshake(bool is_middleman, uint8_t peer_addr)
+{
+    char rx_buf[256];
+    int attempt = 0;
+    const int MAX_ATTEMPTS = 20;
+
+    if (is_middleman) {
+        ESP_LOGI(TAG, "[MM] Waiting for satellite boot message...");
+
+        while (attempt < MAX_ATTEMPTS) {
+            if (lora_wait_for_message(rx_buf, sizeof(rx_buf), 3000)) {
+                if (strstr(rx_buf, "SATELLITE_BOOT_OK")) {
+                    ESP_LOGI(TAG, "[MM] Satellite boot message received.");
+                    vTaskDelay(pdMS_TO_TICKS(500));
+                    lora_send_message(peer_addr, "MM_ACK_BOOT");
+                    ESP_LOGI(TAG, "[MM] Sent ACK to satellite.");
+                    return true;
+                }
+            }
+            attempt++;
+        }
+
+        ESP_LOGW(TAG, "[MM] No boot message received after %d attempts.", MAX_ATTEMPTS);
+        return false;
+    }
+    else {
+        ESP_LOGI(TAG, "[SAT] Sending boot message and waiting for ACK...");
+
+        for (attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
+            lora_send_message(peer_addr, "SATELLITE_BOOT_OK");
+            ESP_LOGI(TAG, "[SAT] Boot message sent (attempt %d).", attempt + 1);
+
+            if (lora_wait_for_message(rx_buf, sizeof(rx_buf), 3000)) {
+                if (strstr(rx_buf, "MM_ACK_BOOT")) {
+                    ESP_LOGI(TAG, "[SAT] Received ACK from MiddleMan!");
+                    return true;
+                }
+            }
+
+            ESP_LOGW(TAG, "[SAT] No ACK received, retrying...");
+            vTaskDelay(pdMS_TO_TICKS(1000));
+        }
+
+        ESP_LOGE(TAG, "[SAT] Handshake failed after %d attempts.", MAX_ATTEMPTS);
+        return false;
     }
 }
 
