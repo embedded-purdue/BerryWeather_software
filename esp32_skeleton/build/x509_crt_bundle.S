@@ -1,4 +1,4 @@
-/* * Data converted from /Users/connorpowell/Documents/Purdue/ES@P/BerryWeather/BerryWeather/esp32_skeleton/build/esp-idf/mbedtls/x509_crt_bundle
+/* * Data converted from C:/Users/13092/Documents/Purdue Files/8. Fall 2025/ES@P/BerryWeather/esp32_skeleton/build/esp-idf/mbedtls/x509_crt_bundle
  */
 .data
 #if !defined (__APPLE__) && !defined (__linux__)

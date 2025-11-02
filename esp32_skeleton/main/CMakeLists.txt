@@ -1,3 +1,10 @@
-idf_component_register(SRCS "main.c"
-                       PRIV_REQUIRES spi_flash
-                       INCLUDE_DIRS "")
+# idf_component_register(SRCS "rain_sensor.c" "as7331.c" "main.c"
+#                        PRIV_REQUIRES spi_flash
+#                        INCLUDE_DIRS "")
+
+idf_component_register(
+    SRCS "rain_sensor.c" "as7331.c" "main.c"
+    INCLUDE_DIRS "."
+    REQUIRES driver esp_adc
+    PRIV_REQUIRES spi_flash
+)
