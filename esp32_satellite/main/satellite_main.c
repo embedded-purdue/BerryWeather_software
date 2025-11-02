@@ -30,7 +30,7 @@ void periodic_sensor_task(void *arg)
     // Define the send interval (e.g., 30 minutes)
     // For testing, you can set this to a shorter duration, like 30 seconds:
     // const int SEND_INTERVAL_SECONDS = 30;
-    const int SEND_INTERVAL_MINUTES = 30;
+    const int SEND_INTERVAL_MINUTES = 0.5;
     const uint64_t SEND_INTERVAL_US = (uint64_t)SEND_INTERVAL_MINUTES * 60 * 1000 * 1000;
     
     printf("Starting periodic sensor task. Sending every %d minutes.\n", SEND_INTERVAL_MINUTES);
@@ -61,6 +61,7 @@ void periodic_sensor_task(void *arg)
         
         // Flush UART buffer before sleeping
         uart_wait_tx_done(LORA_UART_PORT, pdMS_TO_TICKS(1000));
+        vTaskDelay(pdMS_TO_TICKS(500));
 
         // Configure deep sleep
         esp_sleep_enable_timer_wakeup(SEND_INTERVAL_US);
@@ -89,6 +90,9 @@ void app_main(void)
     // 1. Initialize LoRa UART and Reset Module
     lora_uart_config();
     lora_reset();
+
+    vTaskDelay(pdMS_TO_TICKS(500));
+    uart_flush_input(LORA_UART_PORT);
 
     // 2. Perform common LoRa setup
     printf("Setting up LoRa module...\n");

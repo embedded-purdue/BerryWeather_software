@@ -17,6 +17,10 @@
 // --- MiddleMan Specific Configuration ---
 #define MM_ADDR 1 // This MiddleMan's address
 
+// Set to 1 to build the minimal LoRa-only listener
+// Set to 0 to build the full Wi-Fi + MQTT application
+#define LORA_TEST_ONLY 1
+
 // List of KNOWN satellite addresses.
 // We will publish discovery topics for each of these.
 static const int KNOWN_SATELLITE_ADDRESSES[] = { 10 }; // Add more, e.g. {10, 11, 12}
@@ -34,6 +38,30 @@ static EventGroupHandle_t s_wifi_event_group;
 static int s_retry_num = 0;
 static const char *TAG = "mqtt_berryWeather";
 
+
+// --- Minimal LoRa-only Listen Task ---
+void lora_simple_listen_task(void *arg)
+{
+    uint8_t *data = (uint8_t *)malloc(LORA_UART_BUF_SIZE);
+    if (data == NULL) {
+        ESP_LOGE(TAG, "Failed to allocate buffer for simple listen task");
+        vTaskDelete(NULL);
+    }
+
+    ESP_LOGI(TAG, "--- LORA TEST MODE ---");
+    ESP_LOGI(TAG, "Starting simple LoRa listen task. Waiting for messages...");
+
+    while (1) {
+        // Wait for a message from the LoRa module (this will block forever)
+        int len = uart_read_bytes(LORA_UART_PORT, data, LORA_UART_BUF_SIZE - 1, portMAX_DELAY);
+        
+        if (len > 0) {
+            data[len] = '\0'; // Null-terminate the received string
+            ESP_LOGI(TAG, "LoRa Received: %s", data);
+        }
+    }
+    free(data);
+}
 
 /*
  *
@@ -363,10 +391,36 @@ void init_checks()
 
 void app_main(void)
 {
-    ESP_LOGI(TAG, "--- MiddleMan Device Booting ---");
+#if LORA_TEST_ONLY == 1
+    // --- LORA TEST MODE ---
+    // This code will run if LORA_TEST_ONLY is 1
+
+    ESP_LOGI(TAG, "--- MiddleMan Device Booting (LoRa TEST MODE) ---");
+
+    // 1. Initialize LoRa UART and Reset Module
+    ESP_LOGI(TAG, "Initializing LoRa Module...");
+    lora_uart_config();
+    lora_reset();
+
+    vTaskDelay(pdMS_TO_TICKS(500));
+    uart_flush_input(LORA_UART_PORT);
+
+    // 2. Perform common LoRa setup
+    ESP_LOGI(TAG, "Setting up LoRa module...\n");
+    lora_common_setup(MM_ADDR); 
+
+    // 3. Start the simple listen task
+    xTaskCreate(lora_simple_listen_task, "lora_simple_listen_task", 4096, NULL, 5, NULL);
+
+    ESP_LOGI(TAG, "Listening on UART %d", LORA_UART_PORT);
+
+#else
+    // --- FULL WI-FI + MQTT MODE ---
+    // This original code will run if LORA_TEST_ONLY is 0
+
+    ESP_LOGI(TAG, "--- MiddleMan Device Booting (FULL MODE) ---");
 
     // 1. Initialize NVS, Netif, and Wi-Fi
-    // (Your init_log and init_checks functions)
     init_log();
     init_checks(); // This blocks until Wi-Fi is connected
 
@@ -380,8 +434,8 @@ void app_main(void)
     lora_common_setup(MM_ADDR); 
 
     // 4. Start the MQTT Client
-    // The MQTT_EVENT_CONNECTED handler will take care of
-    // publishing discovery and starting the LoRa listener task.
     ESP_LOGI(TAG, "Starting MQTT Client...");
     mqtt5_app_start();
+
+#endif
 }
