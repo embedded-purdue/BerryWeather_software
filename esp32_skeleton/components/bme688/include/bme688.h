@@ -4,7 +4,8 @@
 #include <stdint.h>
 #include "bme68x.h"
 
-void bme688_init(void);
+void bme688_init(struct bme68x_data *data,
+                 struct bme68x_dev *bme);
 
 /* Read temperature (°C) in FORCED mode.
  * Returns: BME68X_OK on success,

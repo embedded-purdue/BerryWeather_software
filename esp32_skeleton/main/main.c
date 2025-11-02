@@ -21,7 +21,7 @@ struct bme68x_data data;
 struct bme68x_dev bme;
 
 void app_main(void) {
-    bme688_init();
+    bme688_init(&data, &bme);
     /*as7331_init();
     soil_moisture_init();
     rain_sensor_init();
