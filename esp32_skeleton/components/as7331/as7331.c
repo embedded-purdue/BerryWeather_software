@@ -110,6 +110,11 @@ esp_err_t as7331_read_light(AS7331 *dev, AS7331_Light *light) {
     uint16_t raw_uvb = ((uint16_t)buf[3] << 8) | buf[2];
     uint16_t raw_uvc = ((uint16_t)buf[5] << 8) | buf[4];
 
+    // Change raw values by setting floor value to 0 when there is complete darkness
+    raw_uva --;
+    raw_uvb --;
+    raw_uvc = 0; // Clamp UVC channel to 0 because short-wave UVA/UVB leak in; should be 0 in direct sunlight
+
     // Store raw values
     dev->light_reading_raw[0] = raw_uva;
     dev->light_reading_raw[1] = raw_uvb;
@@ -133,6 +138,24 @@ esp_err_t as7331_read_light(AS7331 *dev, AS7331_Light *light) {
     light->uva = (float)raw_uva / respA;
     light->uvb = (float)raw_uvb / respB;
     light->uvc = (float)raw_uvc / respC;
+
+    // UV Index Calculation
+    /*
+
+    float uva_wm2 = light->uva * 0.01f;
+    float uvb_wm2 = light->uvb * 0.01f;
+    float uvc_wm2 = light->uvc * 0.01f;
+
+    const float K_UVA = 0.003f;
+    const float K_UVB = 0.25f;
+    const float K_UVC = 0.0f;
+
+    float erythemal_irradiance = uva_wm2 * K_UVA + uvb_wm2 * K_UVB + uvc_wm2 * K_UVC;
+
+    float uv_index = erythemal_irradiance / 0.025f;
+
+    printf("UVI: %2f", uv_index);
+    */
 
     return ESP_OK; // successful transaction
 }
