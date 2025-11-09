@@ -52,7 +52,7 @@ void periodic_sensor_task(void *arg)
     printf("Payload: %s\n", json_payload);
     
     lora_send_message(MM_ADDR, json_payload);
-    uart_flush_input(LORA_UART_PORT);
+    // uart_flush_input(LORA_UART_PORT);
     printf("Waiting for data ACK from MiddleMan...\n");
     
     char rx_buf[128];
@@ -101,7 +101,7 @@ void app_main(void)
     lora_reset();
 
     vTaskDelay(pdMS_TO_TICKS(500));
-    uart_flush_input(LORA_UART_PORT);
+    // uart_flush_input(LORA_UART_PORT);
 
     // 2. Perform common LoRa setup
     printf("Setting up LoRa module...\n");

@@ -24,7 +24,7 @@ void lora_send_cmd_and_print(const char *s) {
 bool lora_wait_for_message(char *buf, size_t len, uint32_t timeout_ms)
 {
     int n = uart_read_bytes(LORA_UART_PORT, (uint8_t*)buf, len - 1, pdMS_TO_TICKS(timeout_ms));
-    vTaskDelay(pdMS_TO_TICKS(6000));
+    // vTaskDelay(pdMS_TO_TICKS(6000));
     if (n > 0) {
         buf[n] = '\0';
         ESP_LOGI(TAG, "LoRa RX: %s", buf);

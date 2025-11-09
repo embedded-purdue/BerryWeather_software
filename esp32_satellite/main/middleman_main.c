@@ -225,11 +225,18 @@ void lora_listen_to_mqtt_task(void *arg)
     
     char rx_buf[256];
     int attempt = 0;
-    const int MAX_ATTEMPTS = 20;
+    const int MAX_ATTEMPTS = INT_MAX;
     
     while (attempt < MAX_ATTEMPTS) {
         ESP_LOGI(TAG, "in mqtt listen task while loop");
         if (lora_wait_for_message(rx_buf, sizeof(rx_buf), 3000)) {
+            if (strstr(rx_buf, "SATELLITE_BOOT_OK")) {
+                ESP_LOGI(TAG, "[MM] Satellite boot message received.");
+                vTaskDelay(pdMS_TO_TICKS(500));
+                lora_send_message(SAT_ADDR, "MM_ACK_BOOT");
+                ESP_LOGI(TAG, "[MM] Sent ACK to satellite.");
+            }
+
             if (strstr((char*)rx_buf, "+RCV=")) {
                 int sender_addr = 10; // extract dynamically if multiple satellites
                 // After parsing JSON
@@ -297,6 +304,7 @@ void lora_listen_to_mqtt_task(void *arg)
                 }
             }
         }
+
         attempt++;
     }
     
@@ -327,7 +335,7 @@ static void mqtt5_event_handler(void *handler_args, esp_event_base_t base, int32
         case MQTT_EVENT_DISCONNECTED:
             ESP_LOGI(TAG, "MQTT_EVENT_DISCONNECTED");
             //DELETE THIS: ONLY FOR TESTING WITHOUT MQTT:
-            // xTaskCreate(lora_listen_to_mqtt_task, "lora_listen_task", 4096, client, 5, NULL);
+            xTaskCreate(lora_listen_to_mqtt_task, "lora_listen_task", 4096, client, 5, NULL);
             // Note: If you get disconnected, you may want to stop/restart the lora_listen_task
             break;
         // ... other event handlers (SUBSCRIBED, PUBLISHED, ERROR) ...
@@ -410,7 +418,7 @@ void app_main(void)
     lora_reset();
 
     vTaskDelay(pdMS_TO_TICKS(500));
-    uart_flush_input(LORA_UART_PORT);
+    // uart_flush_input(LORA_UART_PORT);
 
     // 2. Perform common LoRa setup
     ESP_LOGI(TAG, "Setting up LoRa module...\n");
