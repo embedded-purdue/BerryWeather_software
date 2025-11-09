@@ -4,6 +4,10 @@
 
 method=source_dir
 command=
+<<<<<<< HEAD
+source_dir=C:/Users/dprak/esp/v5.5.1/esp-idf/components/bootloader/subproject
+=======
 source_dir=/Users/stephenschafer/esp/v5.5.1/esp-idf/components/bootloader/subproject
+>>>>>>> 6df9ad4c410838caba840c617aa98031ef5bf9ed
 work_dir=
 

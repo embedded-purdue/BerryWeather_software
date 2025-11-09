@@ -1,6 +1,18 @@
 # Target labels
  bootloader
 # Source files and their labels
+<<<<<<< HEAD
+C:/Users/dprak/esp/projects/BerryWeather/esp32_skeleton/build/CMakeFiles/bootloader
+C:/Users/dprak/esp/projects/BerryWeather/esp32_skeleton/build/CMakeFiles/bootloader.rule
+C:/Users/dprak/esp/projects/BerryWeather/esp32_skeleton/build/CMakeFiles/bootloader-complete.rule
+C:/Users/dprak/esp/projects/BerryWeather/esp32_skeleton/build/bootloader-prefix/src/bootloader-stamp/bootloader-build.rule
+C:/Users/dprak/esp/projects/BerryWeather/esp32_skeleton/build/bootloader-prefix/src/bootloader-stamp/bootloader-configure.rule
+C:/Users/dprak/esp/projects/BerryWeather/esp32_skeleton/build/bootloader-prefix/src/bootloader-stamp/bootloader-download.rule
+C:/Users/dprak/esp/projects/BerryWeather/esp32_skeleton/build/bootloader-prefix/src/bootloader-stamp/bootloader-install.rule
+C:/Users/dprak/esp/projects/BerryWeather/esp32_skeleton/build/bootloader-prefix/src/bootloader-stamp/bootloader-mkdir.rule
+C:/Users/dprak/esp/projects/BerryWeather/esp32_skeleton/build/bootloader-prefix/src/bootloader-stamp/bootloader-patch.rule
+C:/Users/dprak/esp/projects/BerryWeather/esp32_skeleton/build/bootloader-prefix/src/bootloader-stamp/bootloader-update.rule
+=======
 /Users/stephenschafer/Dev/esp_berryweather/GitHub/BerryWeather/esp32_skeleton/build/CMakeFiles/bootloader
 /Users/stephenschafer/Dev/esp_berryweather/GitHub/BerryWeather/esp32_skeleton/build/CMakeFiles/bootloader.rule
 /Users/stephenschafer/Dev/esp_berryweather/GitHub/BerryWeather/esp32_skeleton/build/CMakeFiles/bootloader-complete.rule
@@ -11,3 +23,4 @@
 /Users/stephenschafer/Dev/esp_berryweather/GitHub/BerryWeather/esp32_skeleton/build/bootloader-prefix/src/bootloader-stamp/bootloader-mkdir.rule
 /Users/stephenschafer/Dev/esp_berryweather/GitHub/BerryWeather/esp32_skeleton/build/bootloader-prefix/src/bootloader-stamp/bootloader-patch.rule
 /Users/stephenschafer/Dev/esp_berryweather/GitHub/BerryWeather/esp32_skeleton/build/bootloader-prefix/src/bootloader-stamp/bootloader-update.rule
+>>>>>>> 6df9ad4c410838caba840c617aa98031ef5bf9ed

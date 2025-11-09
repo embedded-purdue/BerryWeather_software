@@ -1,7 +1,12 @@
 {
   "C_Cpp.intelliSenseEngine": "Tag Parser",
+<<<<<<< HEAD
+  "idf.espIdfPath": "/Users/connorpowell/esp/v5.5.1/esp-idf",
+  "idf.pythonInstallPath": "C:\\Users\\dprak\\.espressif\\tools\\idf-python\\3.11.2\\python.exe",
+=======
   "idf.espIdfPath": "/Users/stephenschafer/esp/v5.5.1/esp-idf",
   "idf.pythonInstallPath": "/usr/bin/python3",
+>>>>>>> 6df9ad4c410838caba840c617aa98031ef5bf9ed
   "idf.openOcdConfigs": [
     "board/esp32-wrover-kit-3.3v.cfg"
   ],
@@ -17,9 +22,13 @@
     "--compile-commands-dir=${workspaceFolder}/build"
   ],
   "idf.flashType": "UART",
+<<<<<<< HEAD
+  "idf.portWin": "COM3"
+=======
   "files.associations": {
     "cstdint": "c",
     "compare": "c",
     "task.h": "c"
   }
+>>>>>>> 6df9ad4c410838caba840c617aa98031ef5bf9ed
 }
