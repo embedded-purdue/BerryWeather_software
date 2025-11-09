@@ -216,10 +216,10 @@ int8_t bme688_read_temperature(float *temp, struct bme68x_data *data, struct bme
     // Get the delay time for the measurement
     uint32_t delay_period = bme68x_get_meas_dur(BME68X_FORCED_MODE, &conf, bme);
     
-    ESP_LOGI(TAG, "Measurement delay: %lu ms", delay_period / 1000);
+    ESP_LOGI(TAG, "Measurement delay: %lu ms", delay_period / 100);
     
     // Wait for the measurement to complete (convert microseconds to milliseconds)
-    vTaskDelay(pdMS_TO_TICKS((delay_period / 1000) + 1));
+    vTaskDelay(pdMS_TO_TICKS((delay_period / 100) + 1));
 
     // Get the data
     rslt = bme68x_get_data(BME68X_FORCED_MODE, data, &n_data, bme);
@@ -261,10 +261,10 @@ int8_t bme688_read_pressure(float *pres, struct bme68x_data *data, struct bme68x
     // Get the delay time for the measurement
     uint32_t delay_period = bme68x_get_meas_dur(BME68X_FORCED_MODE, &conf, bme);
     
-    ESP_LOGI(TAG, "Pressure measurement delay: %lu ms", delay_period / 1000);
+    ESP_LOGI(TAG, "Pressure measurement delay: %lu ms", delay_period / 100);
     
     // Wait for the measurement to complete (convert microseconds to milliseconds)
-    vTaskDelay(pdMS_TO_TICKS((delay_period / 1000) + 1));
+    vTaskDelay(pdMS_TO_TICKS((delay_period / 100) + 1));
 
     // Get the data
     rslt = bme68x_get_data(BME68X_FORCED_MODE, data, &n_data, bme);
@@ -306,10 +306,10 @@ int8_t bme688_read_humidity(float *hum, struct bme68x_data *data, struct bme68x_
     // Get the delay time for the measurement
     uint32_t delay_period = bme68x_get_meas_dur(BME68X_FORCED_MODE, &conf, bme);
     
-    ESP_LOGI(TAG, "Humidity measurement delay: %lu ms", delay_period / 1000);
+    ESP_LOGI(TAG, "Humidity measurement delay: %lu ms", delay_period / 100);
     
     // Wait for the measurement to complete (convert microseconds to milliseconds)
-    vTaskDelay(pdMS_TO_TICKS((delay_period / 1000) + 1));
+    vTaskDelay(pdMS_TO_TICKS((delay_period / 100) + 1));
 
     // Get the data
     rslt = bme68x_get_data(BME68X_FORCED_MODE, data, &n_data, bme);
