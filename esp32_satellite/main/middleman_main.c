@@ -21,7 +21,7 @@
 
 // Set to 1 to build the minimal LoRa-only listener
 // Set to 0 to build the full Wi-Fi + MQTT application
-#define LORA_TEST_ONLY 1
+#define LORA_TEST_ONLY 0
 
 // List of KNOWN satellite addresses.
 // We will publish discovery topics for each of these.
@@ -44,33 +44,24 @@ static const char *TAG = "mqtt_berryWeather";
 // --- Minimal LoRa-only Listen Task ---
 void lora_simple_listen_task(void *arg)
 {
-    uint8_t *data = (uint8_t *)malloc(LORA_UART_BUF_SIZE);
-    if (data == NULL) {
-        ESP_LOGE(TAG, "Failed to allocate buffer for simple listen task");
-        vTaskDelete(NULL);
+    char rx_buf[256];
+    int attempt = 0;
+    const int MAX_ATTEMPTS = 20;
+    
+    while (attempt < MAX_ATTEMPTS) {
+        ESP_LOGI(TAG, "in new attempt<max_attempts wait for message, simple listen lora");
+        if (lora_wait_for_message(rx_buf, sizeof(rx_buf), 3000)) {
+            if (strstr((char*)rx_buf, "+RCV=")) {
+                int sender_addr = 10; // extract dynamically if multiple satellites
+                // After parsing JSON
+                ESP_LOGI(TAG, "Data received from satellite %d: %s", sender_addr, rx_buf);
+                lora_send_message(sender_addr, "MM_ACK_DATA");
+                ESP_LOGI(TAG, "ACK sent to satellite %d.", sender_addr);
+            }
+        }
+        attempt++;
     }
 
-    ESP_LOGI(TAG, "--- LORA TEST MODE ---");
-    ESP_LOGI(TAG, "Starting simple LoRa listen task. Waiting for messages...");
-
-    while (1) {
-        // Wait for a message from the LoRa module (this will block forever)
-        int len = uart_read_bytes(LORA_UART_PORT, data, LORA_UART_BUF_SIZE - 1, portMAX_DELAY);
-        
-        if (len > 0) {
-            data[len] = '\0'; // Null-terminate the received string
-            ESP_LOGI(TAG, "LoRa Received: %s", data);
-        }
-
-        if (strstr((char*)data, "+RCV=")) {
-            int sender_addr = 10; // extract dynamically if multiple satellites
-            // After parsing JSON
-            ESP_LOGI(TAG, "Data received from satellite %d: %s", sender_addr, data);
-            lora_send_message(sender_addr, "MM_ACK_DATA");
-            ESP_LOGI(TAG, "ACK sent to satellite %d.", sender_addr);
-        }
-    }
-    free(data);
 }
 
 /*
@@ -229,82 +220,86 @@ void publish_discovery_for_satellite(esp_mqtt_client_handle_t client, int sat_ad
 void lora_listen_to_mqtt_task(void *arg)
 {
     esp_mqtt_client_handle_t client = (esp_mqtt_client_handle_t) arg;
-    uint8_t *data = (uint8_t *)malloc(LORA_UART_BUF_SIZE);
-    if (data == NULL) {
-        ESP_LOGE(TAG, "Failed to allocate buffer for lora_listen_task");
-        vTaskDelete(NULL);
-    }
 
     ESP_LOGI(TAG, "Starting LoRa listen task. Forwarding to MQTT.");
+    
+    char rx_buf[256];
+    int attempt = 0;
+    const int MAX_ATTEMPTS = 20;
+    
+    while (attempt < MAX_ATTEMPTS) {
+        ESP_LOGI(TAG, "in mqtt listen task while loop");
+        if (lora_wait_for_message(rx_buf, sizeof(rx_buf), 3000)) {
+            if (strstr((char*)rx_buf, "+RCV=")) {
+                int sender_addr = 10; // extract dynamically if multiple satellites
+                // After parsing JSON
+                ESP_LOGI(TAG, "Data received from satellite %d: %s", sender_addr, rx_buf);
+                lora_send_message(sender_addr, "MM_ACK_DATA");
+                ESP_LOGI(TAG, "ACK sent to satellite %d.", sender_addr);
 
-    while (1) {
-        // Wait for a message from the LoRa module
-        int len = uart_read_bytes(LORA_UART_PORT, data, LORA_UART_BUF_SIZE - 1, portMAX_DELAY);
-        if (len > 0) {
-            data[len] = '\0';
-            ESP_LOGI(TAG, "LoRa Received: %s", data);
-
-            // Check if this is a data message
-            // Format: +RCV=<Address>,<Length>,<Data>,<RSSI>,<SNR>
-            if (strncmp((char*)data, "+RCV=", 5) == 0) {
-                
-                int sender_addr, rssi, snr; // <-- Removed payload_len
-                char *json_payload = NULL;
-                char *token;
-                
-                // Use strtok to parse the comma-separated string
-                // Note: This modifies the 'data' buffer in-place
-                token = strtok((char*)data + 5, ","); // Skip "+RCV="
-                if (token == NULL) continue;
-                sender_addr = atoi(token);
-                
-                // DELETED THE BLOCK FOR payload_len
-        
-                token = strtok(NULL, ","); // This is the start of the payload
-                if (token == NULL) continue;
-                json_payload = token;
-
-                // The payload might contain commas, so we can't use strtok anymore.
-                // We know the length, but the LoRa module doesn't include the
-                // last two fields (RSSI, SNR) if the payload has commas.
-                // Let's assume for now the payload is the rest of the string
-                // until the next comma (which would be RSSI).
-                // A safer way is to find the Nth comma.
-                // For now, let's find the *last* two commas.
-
-                char *rssi_str = strrchr(json_payload, ',');
-                if (rssi_str == NULL) continue;
-                *rssi_str = '\0'; // Terminate the JSON payload string
-                rssi = atoi(rssi_str + 1);
-
-                char *snr_str = strrchr(json_payload, ',');
-                if (snr_str == NULL) continue;
-                *snr_str = '\0'; // Terminate the JSON payload string
-                snr = atoi(snr_str + 1);
-
-                // Now, 'json_payload' points to the clean JSON string
-                ESP_LOGI(TAG, "Parsed message from Address %d (RSSI: %d, SNR: %d)", sender_addr, rssi, snr);
-                ESP_LOGI(TAG, "Payload: %s", json_payload);
-
-                // --- Validate the JSON ---
-                cJSON *root = cJSON_Parse(json_payload);
-                if (root == NULL) {
-                    ESP_LOGE(TAG, "Received invalid JSON. Discarding.");
-                    continue; // Wait for the next message
+                if (strstr((char*)rx_buf, "+RCV="))  {
+                    ESP_LOGI(TAG, "INSIDE PARSING IT");
+                    int rssi, snr; // <-- Removed payload_len
+                    char *json_payload = NULL;
+                    char *token;
+                    
+                    // Use strtok to parse the comma-separated string
+                    // Note: This modifies the 'data' buffer in-place
+                    token = strtok((char*)rx_buf + 5, ","); // Skip "+RCV="
+                    if (token == NULL) continue;
+                    sender_addr = atoi(token);
+                    
+                    // DELETED THE BLOCK FOR payload_len
+            
+                    token = strtok(NULL, ","); // This is the start of the payload
+                    if (token == NULL) continue;
+                    json_payload = token;
+    
+                    // The payload might contain commas, so we can't use strtok anymore.
+                    // We know the length, but the LoRa module doesn't include the
+                    // last two fields (RSSI, SNR) if the payload has commas.
+                    // Let's assume for now the payload is the rest of the string
+                    // until the next comma (which would be RSSI).
+                    // A safer way is to find the Nth comma.
+                    // For now, let's find the *last* two commas.
+    
+                    char *rssi_str = strrchr(json_payload, ',');
+                    if (rssi_str == NULL) continue;
+                    *rssi_str = '\0'; // Terminate the JSON payload string
+                    rssi = atoi(rssi_str + 1);
+    
+                    char *snr_str = strrchr(json_payload, ',');
+                    if (snr_str == NULL) continue;
+                    *snr_str = '\0'; // Terminate the JSON payload string
+                    snr = atoi(snr_str + 1);
+    
+                    // Now, 'json_payload' points to the clean JSON string
+                    ESP_LOGI(TAG, "Parsed message from Address %d (RSSI: %d, SNR: %d)", sender_addr, rssi, snr);
+                    ESP_LOGI(TAG, "Payload: %s", json_payload);
+    
+                    // --- Validate the JSON ---
+                    cJSON *root = cJSON_Parse(json_payload);
+                    if (root == NULL) {
+                        ESP_LOGE(TAG, "Received invalid JSON. Discarding.");
+                        continue; // Wait for the next message
+                    }
+                    cJSON_Delete(root); // We just wanted to check if it's valid
+    
+                    // --- Dynamically create the state topic ---
+                    char state_topic[128];
+                    snprintf(state_topic, sizeof(state_topic), "weather/berrystation_%d/state", sender_addr);
+    
+                    // --- Publish to MQTT ---
+                    ESP_LOGI(TAG, "Publishing to MQTT topic: %s", state_topic);
+                    esp_mqtt_client_publish(client, state_topic, json_payload, 0, 0, false);
+    
+                    
                 }
-                cJSON_Delete(root); // We just wanted to check if it's valid
-
-                // --- Dynamically create the state topic ---
-                char state_topic[128];
-                snprintf(state_topic, sizeof(state_topic), "weather/berrystation_%d/state", sender_addr);
-
-                // --- Publish to MQTT ---
-                ESP_LOGI(TAG, "Publishing to MQTT topic: %s", state_topic);
-                esp_mqtt_client_publish(client, state_topic, json_payload, 0, 0, false);
             }
         }
+        attempt++;
     }
-    free(data);
+    
 }
 
 
@@ -331,6 +326,8 @@ static void mqtt5_event_handler(void *handler_args, esp_event_base_t base, int32
             break;
         case MQTT_EVENT_DISCONNECTED:
             ESP_LOGI(TAG, "MQTT_EVENT_DISCONNECTED");
+            //DELETE THIS: ONLY FOR TESTING WITHOUT MQTT:
+            // xTaskCreate(lora_listen_to_mqtt_task, "lora_listen_task", 4096, client, 5, NULL);
             // Note: If you get disconnected, you may want to stop/restart the lora_listen_task
             break;
         // ... other event handlers (SUBSCRIBED, PUBLISHED, ERROR) ...
@@ -446,6 +443,13 @@ void app_main(void)
     // 3. Perform common LoRa setup
     ESP_LOGI(TAG, "Setting up LoRa module...\n");
     lora_common_setup(MM_ADDR); 
+
+    ESP_LOGI(TAG, "Performing LoRa boot handshake...");
+    if (lora_boot_handshake(true, SAT_ADDR)) {
+        ESP_LOGI(TAG, " Handshake successful with satellite 10!");
+    } else {
+        ESP_LOGW(TAG, " Handshake timeout. Starting listen mode anyway.");
+    }
 
     // 4. Start the MQTT Client
     ESP_LOGI(TAG, "Starting MQTT Client...");

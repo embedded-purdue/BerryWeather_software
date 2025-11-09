@@ -30,7 +30,7 @@ void periodic_sensor_task(void *arg)
     // Define the send interval (e.g., 30 minutes)
     // For testing, you can set this to a shorter duration, like 30 seconds:
     // const int SEND_INTERVAL_SECONDS = 30;
-    const int SEND_INTERVAL_MINUTES = 0.5;
+    const int SEND_INTERVAL_MINUTES = 1;
     const uint64_t SEND_INTERVAL_US = (uint64_t)SEND_INTERVAL_MINUTES * 60 * 1000 * 1000;
     
     printf("Starting periodic sensor task. Sending every %d minutes.\n", SEND_INTERVAL_MINUTES);
@@ -52,12 +52,13 @@ void periodic_sensor_task(void *arg)
     printf("Payload: %s\n", json_payload);
     
     lora_send_message(MM_ADDR, json_payload);
+    uart_flush_input(LORA_UART_PORT);
     printf("Waiting for data ACK from MiddleMan...\n");
     
     char rx_buf[128];
     bool ack_received = false;
     
-    for (int attempt = 0; attempt < 3; attempt++) {
+    for (int attempt = 0; attempt < 25; attempt++) {
         if (lora_wait_for_message(rx_buf, sizeof(rx_buf), 6000)) {
             if (strstr(rx_buf, "MM_ACK_DATA")) {
                 printf("ACK received from MiddleMan!\n");
