@@ -287,7 +287,6 @@ int8_t bme688_read_humidity(float *hum, struct bme68x_data *data, struct bme68x_
     if (!hum || !data || !bme) return BME68X_E_NULL_PTR;
 
     uint8_t n_data = 0;
-    *hum = 0.0f;
     memset(data, 0, sizeof(*data));
 
     // Set operation mode to forced mode to trigger a measurement
@@ -313,16 +312,11 @@ int8_t bme688_read_humidity(float *hum, struct bme68x_data *data, struct bme68x_
 
     // Get the data
     rslt = bme68x_get_data(BME68X_FORCED_MODE, data, &n_data, bme);
-    if (rslt != BME68X_OK) {
-        ESP_LOGE(TAG, "Failed to get humidity data: %d", rslt);
-        return rslt;
-    }
-    if (n_data == 0) {
+    if (n_data)
+        *hum = data->humidity;
+    if (rslt == BME68X_W_NO_NEW_DATA) {
         ESP_LOGW(TAG, "No new humidity data available");
-        return BME68X_W_NO_NEW_DATA;
     }
-
-    *hum = data->humidity;
     ESP_LOGI(TAG, "Humidity reading: %.2f%%", *hum);
     return BME68X_OK;
 }
