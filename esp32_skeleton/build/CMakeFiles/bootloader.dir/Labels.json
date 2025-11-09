@@ -2,6 +2,7 @@
 	"sources" : 
 	[
 		{
+<<<<<<< HEAD
 			"file" : "C:/Users/dprak/esp/projects/BerryWeather/esp32_skeleton/build/CMakeFiles/bootloader"
 		},
 		{
@@ -30,6 +31,36 @@
 		},
 		{
 			"file" : "C:/Users/dprak/esp/projects/BerryWeather/esp32_skeleton/build/bootloader-prefix/src/bootloader-stamp/bootloader-update.rule"
+=======
+			"file" : "/Users/stephenschafer/Dev/esp_berryweather/GitHub/BerryWeather/esp32_skeleton/build/CMakeFiles/bootloader"
+		},
+		{
+			"file" : "/Users/stephenschafer/Dev/esp_berryweather/GitHub/BerryWeather/esp32_skeleton/build/CMakeFiles/bootloader.rule"
+		},
+		{
+			"file" : "/Users/stephenschafer/Dev/esp_berryweather/GitHub/BerryWeather/esp32_skeleton/build/CMakeFiles/bootloader-complete.rule"
+		},
+		{
+			"file" : "/Users/stephenschafer/Dev/esp_berryweather/GitHub/BerryWeather/esp32_skeleton/build/bootloader-prefix/src/bootloader-stamp/bootloader-build.rule"
+		},
+		{
+			"file" : "/Users/stephenschafer/Dev/esp_berryweather/GitHub/BerryWeather/esp32_skeleton/build/bootloader-prefix/src/bootloader-stamp/bootloader-configure.rule"
+		},
+		{
+			"file" : "/Users/stephenschafer/Dev/esp_berryweather/GitHub/BerryWeather/esp32_skeleton/build/bootloader-prefix/src/bootloader-stamp/bootloader-download.rule"
+		},
+		{
+			"file" : "/Users/stephenschafer/Dev/esp_berryweather/GitHub/BerryWeather/esp32_skeleton/build/bootloader-prefix/src/bootloader-stamp/bootloader-install.rule"
+		},
+		{
+			"file" : "/Users/stephenschafer/Dev/esp_berryweather/GitHub/BerryWeather/esp32_skeleton/build/bootloader-prefix/src/bootloader-stamp/bootloader-mkdir.rule"
+		},
+		{
+			"file" : "/Users/stephenschafer/Dev/esp_berryweather/GitHub/BerryWeather/esp32_skeleton/build/bootloader-prefix/src/bootloader-stamp/bootloader-patch.rule"
+		},
+		{
+			"file" : "/Users/stephenschafer/Dev/esp_berryweather/GitHub/BerryWeather/esp32_skeleton/build/bootloader-prefix/src/bootloader-stamp/bootloader-update.rule"
+>>>>>>> 6df9ad4c410838caba840c617aa98031ef5bf9ed
 		}
 	],
 	"target" : 

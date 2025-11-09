@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 # Install script for directory: C:/Users/dprak/esp/v5.5.1/esp-idf/components/esp_driver_gpio
+=======
+# Install script for directory: /Users/stephenschafer/esp/v5.5.1/esp-idf/components/esp_driver_gpio
+>>>>>>> 6df9ad4c410838caba840c617aa98031ef5bf9ed
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -34,6 +38,18 @@ endif()
 
 # Set path to fallback-tool for dependency-resolution.
 if(NOT DEFINED CMAKE_OBJDUMP)
+<<<<<<< HEAD
   set(CMAKE_OBJDUMP "C:/Users/dprak/.espressif/tools/xtensa-esp-elf/esp-14.2.0_20241119/xtensa-esp-elf/bin/xtensa-esp32-elf-objdump.exe")
 endif()
 
+=======
+  set(CMAKE_OBJDUMP "/Users/stephenschafer/.espressif/tools/xtensa-esp-elf/esp-14.2.0_20241119/xtensa-esp-elf/bin/xtensa-esp32-elf-objdump")
+endif()
+
+string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
+       "${CMAKE_INSTALL_MANIFEST_FILES}")
+if(CMAKE_INSTALL_LOCAL_ONLY)
+  file(WRITE "/Users/stephenschafer/Dev/esp_berryweather/GitHub/BerryWeather/esp32_skeleton/build/esp-idf/esp_driver_gpio/install_local_manifest.txt"
+     "${CMAKE_INSTALL_MANIFEST_CONTENT}")
+endif()
+>>>>>>> 6df9ad4c410838caba840c617aa98031ef5bf9ed

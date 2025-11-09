@@ -1,2 +1,7 @@
+<<<<<<< HEAD
 source C:/Users/dprak/esp/projects/BerryWeather/esp32_skeleton/build/gdbinit/symbols
 source C:/Users/dprak/esp/projects/BerryWeather/esp32_skeleton/build/gdbinit/connect
+=======
+source /Users/stephenschafer/Dev/esp_berryweather/GitHub/BerryWeather/esp32_skeleton/build/gdbinit/symbols
+source /Users/stephenschafer/Dev/esp_berryweather/GitHub/BerryWeather/esp32_skeleton/build/gdbinit/connect
+>>>>>>> 6df9ad4c410838caba840c617aa98031ef5bf9ed
