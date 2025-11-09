@@ -567,13 +567,11 @@ int8_t bme68x_get_data(uint8_t op_mode, struct bme68x_data *data, uint8_t *n_dat
                 if (data->status & BME68X_NEW_DATA_MSK)
                 {
                     new_fields = 1;
-                    ESP_LOGI(TAG, "NEW Humidity reading: %.2f%%", data->humidity);
                 }
                 else
                 {
                     new_fields = 0;
                     rslt = BME68X_W_NO_NEW_DATA;
-                    ESP_LOGI(TAG, "NOOOOOOOOOOO");
                 }
             }
         }

@@ -216,7 +216,7 @@ int8_t bme688_read_temperature(float *temp, struct bme68x_data *data, struct bme
     // Get the delay time for the measurement
     uint32_t delay_period = bme68x_get_meas_dur(BME68X_FORCED_MODE, &conf, bme);
     
-    ESP_LOGI(TAG, "Measurement delay: %lu ms", delay_period / 100);
+    //ESP_LOGI(TAG, "Measurement delay: %lu ms", delay_period / 100);
     
     // Wait for the measurement to complete (convert microseconds to milliseconds)
     vTaskDelay(pdMS_TO_TICKS((delay_period / 100) + 1));
@@ -233,7 +233,7 @@ int8_t bme688_read_temperature(float *temp, struct bme68x_data *data, struct bme
     }
 
     *temp = data->temperature;
-    ESP_LOGI(TAG, "Temperature reading: %.2f°C", *temp);
+    //ESP_LOGI(TAG, "Temperature reading: %.2f°C", *temp);
     return BME68X_OK;
 }
 
@@ -261,7 +261,7 @@ int8_t bme688_read_pressure(float *pres, struct bme68x_data *data, struct bme68x
     // Get the delay time for the measurement
     uint32_t delay_period = bme68x_get_meas_dur(BME68X_FORCED_MODE, &conf, bme);
     
-    ESP_LOGI(TAG, "Pressure measurement delay: %lu ms", delay_period / 100);
+    //ESP_LOGI(TAG, "Pressure measurement delay: %lu ms", delay_period / 100);
     
     // Wait for the measurement to complete (convert microseconds to milliseconds)
     vTaskDelay(pdMS_TO_TICKS((delay_period / 100) + 1));
@@ -278,7 +278,7 @@ int8_t bme688_read_pressure(float *pres, struct bme68x_data *data, struct bme68x
     }
 
     *pres = data->pressure;
-    ESP_LOGI(TAG, "Pressure reading: %.2f hPa", *pres);
+    //ESP_LOGI(TAG, "Pressure reading: %.2f hPa", *pres);
     return BME68X_OK;
 }
 
@@ -306,7 +306,7 @@ int8_t bme688_read_humidity(float *hum, struct bme68x_data *data, struct bme68x_
     // Get the delay time for the measurement
     uint32_t delay_period = bme68x_get_meas_dur(BME68X_FORCED_MODE, &conf, bme);
     
-    ESP_LOGI(TAG, "Humidity measurement delay: %lu ms", delay_period / 100);
+    //ESP_LOGI(TAG, "Humidity measurement delay: %lu ms", delay_period / 100);
     
     // Wait for the measurement to complete (convert microseconds to milliseconds)
     vTaskDelay(pdMS_TO_TICKS((delay_period / 100) + 1));
@@ -318,7 +318,7 @@ int8_t bme688_read_humidity(float *hum, struct bme68x_data *data, struct bme68x_
     if (rslt == BME68X_W_NO_NEW_DATA) {
         ESP_LOGW(TAG, "No new humidity data available");
     }
-    ESP_LOGI(TAG, "Humidity reading: %.2f%%", *hum);
+    //ESP_LOGI(TAG, "Humidity reading: %.2f%%", *hum);
     return BME68X_OK;
 }
 
