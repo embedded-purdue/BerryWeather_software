@@ -19,6 +19,7 @@
   "idf.portWin": "COM10",
   "idf.flashType": "UART",
   "files.associations": {
-    "xutility": "c"
+    "xutility": "c",
+    "i2c_master.h": "c"
   }
 }

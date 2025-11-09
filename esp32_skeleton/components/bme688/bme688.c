@@ -158,8 +158,8 @@ void bme688_init(struct bme68x_data *data, struct bme68x_dev *bme) {
     struct bme68x_conf conf;
     conf.filter = BME68X_FILTER_OFF;
     conf.odr = BME68X_ODR_NONE;
-    conf.os_hum = BME68X_OS_16X;
-    conf.os_pres = BME68X_OS_1X;
+    conf.os_hum = BME68X_OS_1X;
+    conf.os_pres = BME68X_OS_16X;
     conf.os_temp = BME68X_OS_2X;
     
     rslt = bme68x_set_conf(&conf, bme);
@@ -287,6 +287,7 @@ int8_t bme688_read_humidity(float *hum, struct bme68x_data *data, struct bme68x_
     if (!hum || !data || !bme) return BME68X_E_NULL_PTR;
 
     uint8_t n_data = 0;
+
     memset(data, 0, sizeof(*data));
 
     // Set operation mode to forced mode to trigger a measurement
@@ -298,8 +299,8 @@ int8_t bme688_read_humidity(float *hum, struct bme68x_data *data, struct bme68x_
 
     // Create a configuration structure for getting measurement duration
     struct bme68x_conf conf;
-    conf.os_hum = BME68X_OS_16X;
-    conf.os_pres = BME68X_OS_1X;
+    conf.os_hum = BME68X_OS_1X;
+    conf.os_pres = BME68X_OS_16X;
     conf.os_temp = BME68X_OS_2X;
     
     // Get the delay time for the measurement
@@ -312,7 +313,7 @@ int8_t bme688_read_humidity(float *hum, struct bme68x_data *data, struct bme68x_
 
     // Get the data
     rslt = bme68x_get_data(BME68X_FORCED_MODE, data, &n_data, bme);
-    if (n_data)
+   // if (n_data)
         *hum = data->humidity;
     if (rslt == BME68X_W_NO_NEW_DATA) {
         ESP_LOGW(TAG, "No new humidity data available");

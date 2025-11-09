@@ -38,6 +38,13 @@
 
 #include "bme68x.h"
 #include <stdio.h>
+#include "esp_err.h"
+#include "esp_log.h"
+#include "esp_timer.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+
+static const char *TAG = "BME688";
 
 /* This internal API is used to read the calibration coefficients */
 static int8_t get_calib_data(struct bme68x_dev *dev);
@@ -560,11 +567,13 @@ int8_t bme68x_get_data(uint8_t op_mode, struct bme68x_data *data, uint8_t *n_dat
                 if (data->status & BME68X_NEW_DATA_MSK)
                 {
                     new_fields = 1;
+                    ESP_LOGI(TAG, "NEW Humidity reading: %.2f%%", data->humidity);
                 }
                 else
                 {
                     new_fields = 0;
                     rslt = BME68X_W_NO_NEW_DATA;
+                    ESP_LOGI(TAG, "NOOOOOOOOOOO");
                 }
             }
         }
