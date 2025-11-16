@@ -10,9 +10,9 @@ set(APP_TARGET "satellite" CACHE STRING "Selects the app to build (satellite or 
 
 # 2. Conditionally set the source file based on the variable
 if(APP_TARGET STREQUAL "satellite")
-    # If building for the satellite, use this file
-    set(SRCS "satellite_main.c")
-    message(STATUS "--- Building SATELLITE application ---")
+    # If building for the satellite, use this file and include sensor drivers
+    set(SRCS "satellite_main.c" "ds18b20.c" "rain_sensor.c" "soil_moisture.c")
+    message(STATUS "--- Building SATELLITE application with sensors ---")
 
 elseif(APP_TARGET STREQUAL "middleman")
     # If building for the middleman, use this file
@@ -28,4 +28,4 @@ endif()
 idf_component_register(SRCS "${SRCS}"
                       INCLUDE_DIRS "."
                       REQUIRES lora_comm 
-                      PRIV_REQUIRES nvs_flash esp_netif esp_wifi esp_event log mqtt spi_flash esp_driver_gpio esp_driver_uart json)
+                      PRIV_REQUIRES nvs_flash esp_netif esp_wifi esp_event log mqtt spi_flash esp_driver_gpio esp_driver_uart json bme688 as7331 DS18B20 soil_moisture rain_sensor)
