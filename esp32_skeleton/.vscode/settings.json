@@ -16,5 +16,10 @@
     "--query-driver=/Users/connorpowell/.espressif/tools/xtensa-esp-elf/esp-14.2.0_20241119/xtensa-esp-elf/bin/xtensa-esp32-elf-gcc",
     "--compile-commands-dir=${workspaceFolder}/build"
   ],
-  "idf.portWin": "COM3"
+  "idf.portWin": "COM3",
+  "idf.flashType": "UART",
+  "files.associations": {
+    "xutility": "c",
+    "i2c_master.h": "c"
+  }
 }
