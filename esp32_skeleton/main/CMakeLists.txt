@@ -1,3 +1,3 @@
-idf_component_register(SRCS "main.c"
-                       PRIV_REQUIRES spi_flash soil_moisture
-                       INCLUDE_DIRS "")
+idf_component_register(SRCS "main.c" "as7331.c" "ds18b20.c" "rain_sensor.c" "soil_moisture.c"
+                       PRIV_REQUIRES spi_flash bme688 soil_moisture
+                       INCLUDE_DIRS ".")
