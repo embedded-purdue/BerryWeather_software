@@ -7,7 +7,7 @@ Most of the information that was used to implement the sensor into this applicat
 In this application, there are two files that define how the microcontroller communicates with the AS7331 sensor. The header file includes two structs in which data are stored. The AS7331 struct handles the port and the device address to allow the microcontroller to communicate with the sensor; it also contains the raw light readings. The AS7331_Light struct contains the converted UV readings in which the weather station is interested.
 
 **How information is shared:**
-The ESP32 microcontroller used in our application communicates with the AS7331 through the I2C protocol. This is done by reading from and writing to the sensor's registers to initiate actions and read relevant data. There are three main types of registers to be aware of:
+The ESP32 microcontroller used in our application communicates with the AS7331 through the I2C protocol. This is done by reading from and writing to the sensor's registers to initiate actions and read relevant data. The I2C address for the sensor itself is 0x74 because both A0 and A1 pins are tied to GND. There are three main types of registers to be aware of:
 1. Operational state register (OSR): This register allows reading and control of sensor's operational state. It can be in either configuration mode or measurement mode.
 2. Configuration Registers (CREG): These registers allow configuration of the sensor's parameters.
 3. Measurement Registers (MRES): These registers allow the microcontroller to read the sensor's data, including UV readings.
