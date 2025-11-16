@@ -27,7 +27,18 @@ The ESP32 microcontroller used in our application communicates with the AS7331 t
     * The UVC channel is clamped to 0 because longer-wavelength light leaks into the UVC channel and leads to inaccurate readings. Clamping the raw value to 0 leads to more accurate readings and calculations.
 3. Obtain responsivity values from each UV channel. This factor is how we convert from raw readings to sensible UV data.
     * Typical responsivity values are given in the data sheet, but these readings are based on a 64ms integration time and a 1x gain. Since responsivity scales linearly, these responsivities must be scaled accordingly by the ratio between the used gain and integration time values, and those given by the data sheet. The driver reads the OUTCONV register to get the actual conversion time before applying the scaling.
-    * These responsivity values are given in counts/(µW/cm²). By dividing the number of raw counts obtained from the measurement registers, we obtain irradiance measurements in µW/cm² (Data sheet equation 2: E = MRES / R).
+    * These responsivity values are given in counts/(µW/cm²). By dividing the number of raw counts obtained from the measurement registers, we obtain irradiance measurements in µW/cm² (Data sheet equation 2: $E = \frac{MRES}{R}$).
 4. Convert raw readings to physical values using responsivity values.
+
+**UV Index Conversion:**
+1. Determine erythema weighting function:
+
+![Weights for different wavelengths](/components/as7331/erythema_weighting_function.png "https://gml.noaa.gov/grad/neubrew/docs/publications/McKenzie_2003.pdf")
+
+2. Find the weights for the different wavelength channels
+    * Channel A: 360nm → 0.000501
+    * Channel B: 300nm → 0.648630
+    * Channel C: 260nm → 1.000000
+3. Multiply the weight by the irradiance values for each channel and sum them up to get the UV Index.
 
 The initialization function and light reading function are then called in the main function with both instances of AS7331 and AS7331_Light structs as parameters. Their data can then be accessed through these structs.
