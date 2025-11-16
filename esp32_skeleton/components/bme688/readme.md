@@ -14,6 +14,7 @@ To establish the I2C connection, the SDA and SCL pin on the BME688 board was con
 ### Code:
 To initialize and retrieve data from the sensor, an initialization function and three separate reading functions were written and utilized. The flow of each function can be observed in the following: 
 >>> Insert 4 block diagrams here
+![Flow diagram for data collection functions](images\data_diagrams.drawio.png)
 
 ## Results
 Through some testing, it can be proven that the sensor provides a reasonably accurate data on atmospheric conditions. The data collected in a controlled environment (indoors) had little variation; and with a drastic change environment(indoors->outdoors), the measured data would become accurate within 1-2 minutes.
