@@ -8,12 +8,11 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "esp_log.h"
-
 #include "bme688.h"
 #include "as7331.h"
-#include "soil_moisture.h"
-#include "rain_sensor.h"
 #include "ds18b20.h"
+#include "rain_sensor.h"
+#include "soil_moisture.h"
 
 static const char *TAG = "MAIN";
 
@@ -26,7 +25,7 @@ void app_main(void) {
     soil_moisture_init();
     rain_sensor_init();
     ds18b20_init();
-
+    
     while (1) {
         float temp, hum, pres, light, soil_temp, soil_moisture, rain_level;
 
