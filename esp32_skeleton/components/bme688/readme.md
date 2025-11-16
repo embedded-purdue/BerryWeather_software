@@ -14,9 +14,11 @@ To establish the I2C connection, the SDA and SCL pin on the BME688 board was con
 ### Code:
 To initialize and retrieve data from the sensor, an initialization function and three separate reading functions were written and utilized. The flow of each function can be observed in the following: 
 > Flow diagram for bme688_init
+> 
 ![Flow diagram for bme688_init function](images/bme688_init.png)
 
 > Flow diagram for bme688_read_x
+> 
 ![Flow diagram for data collection functions](images/data_diagrams.drawio.png)
 
 
