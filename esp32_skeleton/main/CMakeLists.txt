@@ -1,10 +1,4 @@
-# idf_component_register(SRCS "rain_sensor.c" "as7331.c" "main.c"
-#                        PRIV_REQUIRES spi_flash
-#                        INCLUDE_DIRS "")
-
-idf_component_register(
-    SRCS "rain_sensor.c" "as7331.c" "main.c"
-    INCLUDE_DIRS "."
-    REQUIRES driver esp_adc
-    PRIV_REQUIRES spi_flash
-)
+idf_component_register(SRCS "main.c" "as7331.c" "ds18b20.c" "rain_sensor.c" "soil_moisture.c"
+                       PRIV_REQUIRES spi_flash bme688 as7331 DS18B20
+                       REQUIRES driver esp_adc
+                       INCLUDE_DIRS ".")
