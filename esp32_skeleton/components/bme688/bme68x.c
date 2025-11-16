@@ -38,6 +38,13 @@
 
 #include "bme68x.h"
 #include <stdio.h>
+#include "esp_err.h"
+#include "esp_log.h"
+#include "esp_timer.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+
+static const char *TAG = "BME688";
 
 /* This internal API is used to read the calibration coefficients */
 static int8_t get_calib_data(struct bme68x_dev *dev);

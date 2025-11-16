@@ -26,6 +26,11 @@ int8_t bme688_read_humidity(float *hum,
                             struct bme68x_data *data,
                             struct bme68x_dev *bme);
 
+/* Read gas resistance (ohm) in FORCED mode. */
+int8_t bme688_read_gas_resistance(float *gas_resistance,
+                                 struct bme68x_data *data,
+                                 struct bme68x_dev *bme);
+
 /* Usage notes:
  * - These helpers assume BME68X_FORCED_MODE.
  * - `data` must point to one struct for forced mode.
