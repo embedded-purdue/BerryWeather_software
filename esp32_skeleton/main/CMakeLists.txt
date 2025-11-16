@@ -1,9 +1,3 @@
-# idf_component_register(SRCS "mqtt.c" "modular.c"
-#                        PRIV_REQUIRES nvs_flash esp_netif esp_wifi esp_event log mqtt spi_flash esp_driver_gpio esp_driver_uart json
-#                        INCLUDE_DIRS "")
-
-
-
 # 1. Define a variable, "APP_TARGET", that defaults to "satellite"
 #    You can override this on the command line.
 set(APP_TARGET "satellite" CACHE STRING "Selects the app to build (satellite or middleman)")
@@ -11,7 +5,7 @@ set(APP_TARGET "satellite" CACHE STRING "Selects the app to build (satellite or 
 # 2. Conditionally set the source file based on the variable
 if(APP_TARGET STREQUAL "satellite")
     # If building for the satellite, use this file and include sensor drivers
-    set(SRCS "satellite_main.c" "ds18b20.c" "rain_sensor.c" "soil_moisture.c")
+    set(SRCS "satellite_main.c" "ds18b20.c" "soil_moisture.c")
     message(STATUS "--- Building SATELLITE application with sensors ---")
 
 elseif(APP_TARGET STREQUAL "middleman")
@@ -27,5 +21,5 @@ endif()
 # 3. Register the component with the selected source file
 idf_component_register(SRCS "${SRCS}"
                       INCLUDE_DIRS "."
-                      REQUIRES lora_comm 
-                      PRIV_REQUIRES nvs_flash esp_netif esp_wifi esp_event log mqtt spi_flash esp_driver_gpio esp_driver_uart json bme688 as7331 DS18B20 soil_moisture rain_sensor)
+                      REQUIRES lora_comm driver esp_adc
+                      PRIV_REQUIRES spi_flash nvs_flash esp_netif esp_wifi esp_event log mqtt esp_driver_gpio esp_driver_uart json bme688 as7331 DS18B20 soil_moisture rain_sensor)
