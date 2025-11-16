@@ -8,9 +8,9 @@ To establish communication between the BME 688 sensor and the ESP32, we utilized
 ### Connections:
 > _**Note**_: In order to connect the sensor with the ESP32 Microcontroller, a [board with built in connection ports](https://www.amazon.com/Environmental-Temperature-Barometric-Detection-Raspberry/dp/B0BZ4WV4PQ?th=1) was purchased.
 
-To establish the I2C connection, the SDA and SCL pin on the BME688 board was connected to GPIO 21(pin 11) and GPIO 22 (pin 14) respectively.
+To establish the I2C connection, the SDA and SCL pin on the BME688 board was connected to GPIO 21 and GPIO 22 respectively.
 
->>> Insert diagram here
+![BME688 Schematic](images\bme688schematic.png)
 ### Code:
 To initialize and retrieve data from the sensor, an initialization function and three separate reading functions were written and utilized. The flow of each function can be observed in the following: 
 >>> Insert 4 block diagrams here
