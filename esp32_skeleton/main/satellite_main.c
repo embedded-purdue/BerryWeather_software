@@ -7,10 +7,22 @@
 #include "esp_log.h"
 #include "esp_sleep.h" // For deep sleep
 #include "lora_comm.h" 
+#include "bme688.h"
+#include "soil_moisture.h"
+#include "ds18b20.h"
+#include "rain_sensor.h"
+#include "as7331.h"
 
 // --- Satellite Specific Configuration ---
 #define SAT_ADDR 10 // This satellite's address
 #define MM_ADDR  1  // The MiddleMan's address
+
+static const char *TAG = "satellite";
+//GLOBAL STRUCTS:
+struct bme68x_data data;
+struct bme68x_dev bme;
+AS7331 sensor;
+AS7331_Light light;
 
 // --- Sensor Stubs ---
 // Replace these with your actual sensor reading functions
@@ -36,16 +48,48 @@ void periodic_sensor_task(void *arg)
     printf("Starting periodic sensor task. Sending every %d minutes.\n", SEND_INTERVAL_MINUTES);
 
     // 1. Read data from sensors
-    float temperature = get_temp_data();
-    int humidity = get_humidity_data();
-    float pressure = get_pressure_data();
-    float uv_index = get_uv_data();
+    float temp, hum, pres;
+    float soil_temp;
+    float rain_level;
+    // float temperature = get_temp_data();
+    bme688_read_temperature(&temp, &data, &bme);
+    bme688_read_humidity(&hum, &data, &bme);
+    bme688_read_pressure(&pres, &data, &bme);
+    ESP_LOGI(TAG, "BME688 -> Temp: %.2f °C, Hum: %.2f %%, Pres: %.2f hPa", temp, hum, pres);
+
+    ds18b20_read_temperature(&soil_temp);
+    ESP_LOGI(TAG, "DS18B20 -> Soil Temp: %.2f °C", soil_temp);
+
+    rain_level = rain_sensor_get_normalized();
+    ESP_LOGI(TAG, "Rain Sensor -> Level: %.2f", rain_level);
+
+    soil_moisture_read(&soil_moisture);
+    ESP_LOGI(TAG, "Soil Moisture -> Value: %.2f", soil_moisture);
+
+    as7331_read_light(&sensor, &light);
+    ESP_LOGI(TAG, "AS7331 Scaled -> UVA: %.2f, UVB: %.2f, UVC: %.2f uW/cm²", light.uva, light.uvb, light.uvc);
+
+    float uv_index = light.uva;
 
     // 2. Create the JSON payload
-    char json_payload[128];
+    char json_payload[256];
     snprintf(json_payload, sizeof(json_payload),
-            "{\"t\":%.1f,\"h\":%d,\"p\":%.1f,\"uv\":%.1f}",
-            temperature, humidity, pressure, uv_index);
+             "{"
+               "\"t\":%.2f,"      // air temp (°C)
+               "\"h\":%.2f,"      // air humidity (%%)
+               "\"p\":%.2f,"      // air pressure (hPa)
+               "\"st\":%.2f,"     // soil temp (°C)
+               "\"sm\":%.2f,"     // soil moisture (normalized/ADC)
+               "\"rain\":%.2f,"   // rain level (normalized)
+               "\"uv\":%.2f,"     // combined/derived UV index
+               "\"uva\":%.2f,"
+               "\"uvb\":%.2f,"
+               "\"uvc\":%.2f"
+             "}",
+             temp, hum, pres,
+             soil_temp, soil_moisture, rain_level,
+             uv_index,
+             light.uva, light.uvb, light.uvc);
 
     printf("----------------------------------\n");
     printf("Reading sensors and sending data...\n");
@@ -106,6 +150,15 @@ void app_main(void)
     // 2. Perform common LoRa setup
     printf("Setting up LoRa module...\n");
     lora_common_setup(SAT_ADDR); 
+
+    //INITIALIZE SENSORS:
+
+    bme688_init(&data, &bme);
+    ds18b20_init();
+    rain_sensor_init();
+    soil_moisture_init();
+    as7331_init(&sensor);
+
 
     printf("Performing LoRa boot handshake...\n");
     if (lora_boot_handshake(false, MM_ADDR)) {

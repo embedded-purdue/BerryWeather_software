@@ -141,7 +141,7 @@ void publish_discovery_for_satellite(esp_mqtt_client_handle_t client, int sat_ad
     snprintf(device_id, sizeof(device_id), "berrystation_%d", sat_addr);
     snprintf(device_name, sizeof(device_name), "BerryWeather Station %d", sat_addr);
 
-    // 1. Temperature
+    // 1. Air Temperature
     snprintf(unique_id, sizeof(unique_id), "%s_temperature", device_id);
     snprintf(discovery_topic, sizeof(discovery_topic), "homeassistant/sensor/%s/config", unique_id);
     snprintf(discovery_payload, sizeof(discovery_payload),
@@ -150,7 +150,7 @@ void publish_discovery_for_satellite(esp_mqtt_client_handle_t client, int sat_ad
             "\"unique_id\": \"%s\","
             "\"stat_t\": \"%s\","
             "\"val_tpl\": \"{{ value_json.t }}\","
-            "\"unit_of_meas\": \"°F\"," // You may want to send in °C
+            "\"unit_of_meas\": \"°F\","   // Still matching your original, even though payload is °C
             "\"dev_cla\": \"temperature\","
             "\"ic\": \"mdi:thermometer\","
             "\"dev\": {\"ids\": [\"%s\"],\"name\": \"%s\",\"mf\": \"ESAP\"}"
@@ -192,17 +192,97 @@ void publish_discovery_for_satellite(esp_mqtt_client_handle_t client, int sat_ad
         device_name, unique_id, state_topic, device_id, device_name);
     esp_mqtt_client_publish(client, discovery_topic, discovery_payload, 0, 1, true);
 
-    // 4. UV Index
-    snprintf(unique_id, sizeof(unique_id), "%s_uv", device_id);
+    // 4. Soil Temperature (DS18B20 -> value_json.st)
+    snprintf(unique_id, sizeof(unique_id), "%s_soil_temperature", device_id);
     snprintf(discovery_topic, sizeof(discovery_topic), "homeassistant/sensor/%s/config", unique_id);
     snprintf(discovery_payload, sizeof(discovery_payload),
         "{"
-            "\"name\": \"%s UV Index\","
+            "\"name\": \"%s Soil Temperature\","
             "\"unique_id\": \"%s\","
             "\"stat_t\": \"%s\","
-            "\"val_tpl\": \"{{ value_json.uv }}\","
-            "\"unit_of_meas\": \"UV Index\","
-            "\"ic\": \"mdi:sun-wireless\","
+            "\"val_tpl\": \"{{ value_json.st }}\","
+            "\"unit_of_meas\": \"°F\","   // Or \"°C\" if you want HA to treat it as Celsius
+            "\"dev_cla\": \"temperature\","
+            "\"ic\": \"mdi:thermometer\","
+            "\"dev\": {\"ids\": [\"%s\"],\"name\": \"%s\",\"mf\": \"ESAP\"}"
+        "}",
+        device_name, unique_id, state_topic, device_id, device_name);
+    esp_mqtt_client_publish(client, discovery_topic, discovery_payload, 0, 1, true);
+
+    // 5. Soil Moisture
+    snprintf(unique_id, sizeof(unique_id), "%s_soil_moisture", device_id);
+    snprintf(discovery_topic, sizeof(discovery_topic), "homeassistant/sensor/%s/config", unique_id);
+    snprintf(discovery_payload, sizeof(discovery_payload),
+        "{"
+            "\"name\": \"%s Soil Moisture\","
+            "\"unique_id\": \"%s\","
+            "\"stat_t\": \"%s\","
+            "\"val_tpl\": \"{{ value_json.sm }}\","
+            "\"unit_of_meas\": \"%%\","
+            "\"ic\": \"mdi:water\","
+            "\"dev\": {\"ids\": [\"%s\"],\"name\": \"%s\",\"mf\": \"ESAP\"}"
+        "}",
+        device_name, unique_id, state_topic, device_id, device_name);
+    esp_mqtt_client_publish(client, discovery_topic, discovery_payload, 0, 1, true);
+
+    // 6. Rain Level (normalized)
+    snprintf(unique_id, sizeof(unique_id), "%s_rain_level", device_id);
+    snprintf(discovery_topic, sizeof(discovery_topic), "homeassistant/sensor/%s/config", unique_id);
+    snprintf(discovery_payload, sizeof(discovery_payload),
+        "{"
+            "\"name\": \"%s Rain Level\","
+            "\"unique_id\": \"%s\","
+            "\"stat_t\": \"%s\","
+            "\"val_tpl\": \"{{ value_json.rain }}\","
+            "\"ic\": \"mdi:weather-rainy\","
+            "\"dev\": {\"ids\": [\"%s\"],\"name\": \"%s\",\"mf\": \"ESAP\"}"
+        "}",
+        device_name, unique_id, state_topic, device_id, device_name);
+    esp_mqtt_client_publish(client, discovery_topic, discovery_payload, 0, 1, true);
+
+    // 7. UVA
+    snprintf(unique_id, sizeof(unique_id), "%s_uva", device_id);
+    snprintf(discovery_topic, sizeof(discovery_topic), "homeassistant/sensor/%s/config", unique_id);
+    snprintf(discovery_payload, sizeof(discovery_payload),
+        "{"
+            "\"name\": \"%s UVA\","
+            "\"unique_id\": \"%s\","
+            "\"stat_t\": \"%s\","
+            "\"val_tpl\": \"{{ value_json.uva }}\","
+            "\"unit_of_meas\": \"µW/cm²\","
+            "\"ic\": \"mdi:weather-sunny\","
+            "\"dev\": {\"ids\": [\"%s\"],\"name\": \"%s\",\"mf\": \"ESAP\"}"
+        "}",
+        device_name, unique_id, state_topic, device_id, device_name);
+    esp_mqtt_client_publish(client, discovery_topic, discovery_payload, 0, 1, true);
+
+    // 8. UVB
+    snprintf(unique_id, sizeof(unique_id), "%s_uvb", device_id);
+    snprintf(discovery_topic, sizeof(discovery_topic), "homeassistant/sensor/%s/config", unique_id);
+    snprintf(discovery_payload, sizeof(discovery_payload),
+        "{"
+            "\"name\": \"%s UVB\","
+            "\"unique_id\": \"%s\","
+            "\"stat_t\": \"%s\","
+            "\"val_tpl\": \"{{ value_json.uvb }}\","
+            "\"unit_of_meas\": \"µW/cm²\","
+            "\"ic\": \"mdi:weather-sunny\","
+            "\"dev\": {\"ids\": [\"%s\"],\"name\": \"%s\",\"mf\": \"ESAP\"}"
+        "}",
+        device_name, unique_id, state_topic, device_id, device_name);
+    esp_mqtt_client_publish(client, discovery_topic, discovery_payload, 0, 1, true);
+
+    // 9. UVC
+    snprintf(unique_id, sizeof(unique_id), "%s_uvc", device_id);
+    snprintf(discovery_topic, sizeof(discovery_topic), "homeassistant/sensor/%s/config", unique_id);
+    snprintf(discovery_payload, sizeof(discovery_payload),
+        "{"
+            "\"name\": \"%s UVC\","
+            "\"unique_id\": \"%s\","
+            "\"stat_t\": \"%s\","
+            "\"val_tpl\": \"{{ value_json.uvc }}\","
+            "\"unit_of_meas\": \"µW/cm²\","
+            "\"ic\": \"mdi:weather-sunny\","
             "\"dev\": {\"ids\": [\"%s\"],\"name\": \"%s\",\"mf\": \"ESAP\"}"
         "}",
         device_name, unique_id, state_topic, device_id, device_name);
