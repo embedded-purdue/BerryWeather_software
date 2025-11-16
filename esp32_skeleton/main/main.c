@@ -38,7 +38,8 @@ void app_main(void) {
         rain_sensor_read(&rain_level);
         
         ESP_LOGI(TAG, "BME688 -> Temp: %.2f °C, Hum: %.2f %%, Pres: %.2f hPa", temp, hum, pres);
-        ESP_LOGI(TAG, "AS7331 -> Light: %.2f uW/cm²", light);
+        printf("BME688 -> Temp: %.2f °C, Hum: %.2f %%, Pres: %.2f hPa", temp, hum, pres);
+        /*ESP_LOGI(TAG, "AS7331 -> Light: %.2f uW/cm²", light);
         ESP_LOGI(TAG, "DS18B20 -> Soil Temp: %.2f °C", soil_temp);
         ESP_LOGI(TAG, "Soil Moisture -> Value: %.2f", soil_moisture);
         ESP_LOGI(TAG, "Rain Sensor -> Level: %.2f", rain_level);
