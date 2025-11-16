@@ -5,7 +5,7 @@
 #include "driver/gpio.h"
 #include "esp_rom_sys.h" // For esp_rom_delay_us
 
-#define ONEWIRE_GPIO 15 
+#define ONEWIRE_GPIO 18
 static const char *TAG = "DS18B20_DRIVER";
 
 // --- Private 1-Wire Functions ---
