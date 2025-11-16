@@ -16,6 +16,7 @@ To initialize and retrieve data from the sensor, an initialization function and 
 > Flow diagram for bme688_init
 ![Flow diagram for bme688_init function](images/bme688_init.png)
 
+> Flow diagram for bme688_read_x
 ![Flow diagram for data collection functions](images/data_diagrams.drawio.png)
 
 
