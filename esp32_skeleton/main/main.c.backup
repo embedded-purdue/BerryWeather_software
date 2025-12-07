@@ -20,11 +20,30 @@ struct bme68x_data data;
 struct bme68x_dev bme;
 
 void app_main(void) {
+    // Initialize all sensors
     bme688_init(&data, &bme);
     as7331_init();
     soil_moisture_init();
     rain_sensor_init();
     ds18b20_init();
+    
+    // Initialize servo on GPIO14 (D14)
+    esp_err_t ret = servo_init();
+    if (ret != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to initialize servo: %s", esp_err_to_name(ret));
+    } else {
+        ESP_LOGI(TAG, "Servo initialized successfully on GPIO14");
+        
+        // Test servo positions
+        servo_set_angle(0);    // Start at 0 degrees
+        vTaskDelay(pdMS_TO_TICKS(1000));
+        servo_set_angle(90);   // Move to 90 degrees  
+        vTaskDelay(pdMS_TO_TICKS(1000));
+        servo_set_angle(180);  // Move to 180 degrees
+        vTaskDelay(pdMS_TO_TICKS(1000));
+        servo_set_angle(90);   // Back to center
+        vTaskDelay(pdMS_TO_TICKS(1000));
+    }
     
     while (1) {
         float temp, hum, pres, light, soil_temp, soil_moisture, rain_level;
@@ -42,6 +61,21 @@ void app_main(void) {
         ESP_LOGI(TAG, "DS18B20 -> Soil Temp: %.2f °C", soil_temp);
         ESP_LOGI(TAG, "Soil Moisture -> Value: %.2f", soil_moisture);
         ESP_LOGI(TAG, "Rain Sensor -> Level: %.2f", rain_level);
+
+        // Control servo based on rain level (rain cover mechanism)
+        if (rain_level > 50.0) {
+            // High rain detected - close cover (180 degrees)
+            servo_set_angle(180);
+            ESP_LOGI(TAG, "Rain detected! Closing cover (180°)");
+        } else if (rain_level < 10.0) {
+            // No rain - open cover (0 degrees)  
+            servo_set_angle(0);
+            ESP_LOGI(TAG, "Clear weather - Opening cover (0°)");
+        } else {
+            // Partial rain - partial cover (90 degrees)
+            servo_set_angle(90);
+            ESP_LOGI(TAG, "Light rain - Partial cover (90°)");
+        }
 
         vTaskDelay(pdMS_TO_TICKS(2000));
     }
