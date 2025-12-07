@@ -316,28 +316,34 @@ void lora_listen_to_mqtt_task(void *arg)
                 lora_send_message(SAT_ADDR, "MM_ACK_BOOT");
                 ESP_LOGI(TAG, "[MM] Sent ACK to satellite.");
             }
-
-            if (strstr((char*)rx_buf, "+RCV=")) {
-                int sender_addr = 10; // extract dynamically if multiple satellites
-                // After parsing JSON
-                ESP_LOGI(TAG, "Data received from satellite %d: %s", sender_addr, rx_buf);
-                lora_send_message(sender_addr, "MM_ACK_DATA");             
+            
+            if (strstr(rx_buf, "+RCV=")) {
+                int sender_addr = 10; // placeholder, will be overwritten by parser
+            
+                // Find the beginning of the +RCV line inside the buffer
+                char *rcv = strstr(rx_buf, "+RCV=");
+                ESP_LOGI(TAG, "Data received from satellite %d: %s", sender_addr, rcv);
+            
+                // Send ACK
+                lora_send_message(sender_addr, "MM_ACK_DATA");
                 ESP_LOGI(TAG, "ACK sent to satellite %d.", sender_addr);
-
-                if (strncmp(rx_buf, "+RCV=", 5) == 0) {
+            
+                // Now parse starting from `rcv`, not from `rx_buf`
+                if (strncmp(rcv, "+RCV=", 5) == 0) {
                     ESP_LOGI(TAG, "INSIDE PARSING IT");
-                
-                    char *ptr = rx_buf + 5;  // after "+RCV="
+                    
+                    char *ptr = rcv + 5;  // after "+RCV="
                     char *endptr;
-                
+            
                     // 1) sender address
-                    int sender_addr = strtol(ptr, &endptr, 10);
+                    int parsed_addr = strtol(ptr, &endptr, 10);
                     if (*endptr != ',') {
                         ESP_LOGE(TAG, "Parse error: expected comma after sender addr");
                         continue;
                     }
+                    sender_addr = parsed_addr;   // overwrite with real address
                     ptr = endptr + 1;
-                
+            
                     // 2) payload length
                     int payload_len = strtol(ptr, &endptr, 10);
                     if (*endptr != ',') {
@@ -345,29 +351,26 @@ void lora_listen_to_mqtt_task(void *arg)
                         continue;
                     }
                     ptr = endptr + 1;  // ptr now at start of JSON payload
-                
-                    // 3) extract JSON payload using payload_len
+            
                     if (payload_len <= 0 || payload_len >= (int)(sizeof(rx_buf) - 1)) {
                         ESP_LOGE(TAG, "Parse error: invalid payload_len=%d", payload_len);
                         continue;
                     }
-                
-                    // Ensure the message is long enough
+            
                     size_t total_len = strlen(ptr);
                     if ((int)total_len < payload_len) {
                         ESP_LOGE(TAG, "Parse error: message too short for payload_len=%d", payload_len);
                         continue;
                     }
-                
-                    char json_payload[128];  // make sure this is big enough for your max JSON
+            
+                    char json_payload[128];
                     memcpy(json_payload, ptr, payload_len);
                     json_payload[payload_len] = '\0';
-                
-                    // 4) now handle the trailing ",rssi,snr"
-                    char *meta = ptr + payload_len;  // points to ",0,10"
+            
+                    char *meta = ptr + payload_len;
                     int rssi = 0, snr = 0;
                     if (*meta == ',') {
-                        meta++; // skip comma
+                        meta++;
                         if (sscanf(meta, "%d,%d", &rssi, &snr) != 2) {
                             ESP_LOGE(TAG, "Parse error: failed to read RSSI/SNR from '%s'", meta);
                             continue;
@@ -376,34 +379,116 @@ void lora_listen_to_mqtt_task(void *arg)
                         ESP_LOGE(TAG, "Parse error: expected comma before RSSI/SNR");
                         continue;
                     }
-                
+            
                     ESP_LOGI(TAG, "Parsed message from Address %d (RSSI: %d, SNR: %d)",
-                            sender_addr, rssi, snr);
+                             sender_addr, rssi, snr);
                     ESP_LOGI(TAG, "Payload: %s", json_payload);
-                
-                    // --- Validate JSON ---
+            
                     cJSON *root = cJSON_Parse(json_payload);
                     if (root == NULL) {
                         ESP_LOGE(TAG, "Received invalid JSON. Discarding.");
                         continue;
                     }
                     cJSON_Delete(root);
-                
-                    // --- Publish to MQTT ---
+            
                     char state_topic[128];
                     snprintf(state_topic, sizeof(state_topic),
-                            "weather/berrystation_%d/state", sender_addr);
-                
+                             "weather/berrystation_%d/state", sender_addr);
+            
                     ESP_LOGI(TAG, "Publishing to MQTT topic: %s", state_topic);
                     esp_mqtt_client_publish(client, state_topic, json_payload, 0, 0, false);
                 }
+            
+            }
+            
+
+
+            // if (strstr((char*)rx_buf, "+RCV=")) {
+            //     int sender_addr = 10; // extract dynamically if multiple satellites
+            //     // After parsing JSON
+            //     ESP_LOGI(TAG, "Data received from satellite %d: %s", sender_addr, rx_buf);
+            //     lora_send_message(sender_addr, "MM_ACK_DATA");             
+            //     ESP_LOGI(TAG, "ACK sent to satellite %d.", sender_addr);
+                
+            //     if (strstr(rx_buf, "+RCV=")) {
+            //         ESP_LOGI(TAG, "INSIDE PARSING IT");
+                    
+            //         char *ptr = rx_buf + 5;  // after "+RCV="
+            //         char *endptr;
+                
+            //         // 1) sender address
+            //         int sender_addr = strtol(ptr, &endptr, 10);
+            //         if (*endptr != ',') {
+            //             ESP_LOGE(TAG, "Parse error: expected comma after sender addr");
+            //             continue;
+            //         }
+            //         ptr = endptr + 1;
+                
+            //         // 2) payload length
+            //         int payload_len = strtol(ptr, &endptr, 10);
+            //         if (*endptr != ',') {
+            //             ESP_LOGE(TAG, "Parse error: expected comma after payload len");
+            //             continue;
+            //         }
+            //         ptr = endptr + 1;  // ptr now at start of JSON payload
+                
+            //         // 3) extract JSON payload using payload_len
+            //         if (payload_len <= 0 || payload_len >= (int)(sizeof(rx_buf) - 1)) {
+            //             ESP_LOGE(TAG, "Parse error: invalid payload_len=%d", payload_len);
+            //             continue;
+            //         }
+                
+            //         // Ensure the message is long enough
+            //         size_t total_len = strlen(ptr);
+            //         if ((int)total_len < payload_len) {
+            //             ESP_LOGE(TAG, "Parse error: message too short for payload_len=%d", payload_len);
+            //             continue;
+            //         }
+                
+            //         char json_payload[128];  // make sure this is big enough for your max JSON
+            //         memcpy(json_payload, ptr, payload_len);
+            //         json_payload[payload_len] = '\0';
+                
+            //         // 4) now handle the trailing ",rssi,snr"
+            //         char *meta = ptr + payload_len;  // points to ",0,10"
+            //         int rssi = 0, snr = 0;
+            //         if (*meta == ',') {
+            //             meta++; // skip comma
+            //             if (sscanf(meta, "%d,%d", &rssi, &snr) != 2) {
+            //                 ESP_LOGE(TAG, "Parse error: failed to read RSSI/SNR from '%s'", meta);
+            //                 continue;
+            //             }
+            //         } else {
+            //             ESP_LOGE(TAG, "Parse error: expected comma before RSSI/SNR");
+            //             continue;
+            //         }
+                
+            //         ESP_LOGI(TAG, "Parsed message from Address %d (RSSI: %d, SNR: %d)",
+            //                 sender_addr, rssi, snr);
+            //         ESP_LOGI(TAG, "Payload: %s", json_payload);
+                
+            //         // --- Validate JSON ---
+            //         cJSON *root = cJSON_Parse(json_payload);
+            //         if (root == NULL) {
+            //             ESP_LOGE(TAG, "Received invalid JSON. Discarding.");
+            //             continue;
+            //         }
+            //         cJSON_Delete(root);
+                
+            //         // --- Publish to MQTT ---
+            //         char state_topic[128];
+            //         snprintf(state_topic, sizeof(state_topic),
+            //                 "weather/berrystation_%d/state", sender_addr);
+                
+            //         ESP_LOGI(TAG, "Publishing to MQTT topic: %s", state_topic);
+            //         esp_mqtt_client_publish(client, state_topic, json_payload, 0, 0, false);
+            //     }
 
             }
                 
         }
 
         attempt++;
-    }
     
 }
 

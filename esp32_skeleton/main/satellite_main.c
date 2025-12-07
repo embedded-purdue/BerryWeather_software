@@ -99,7 +99,7 @@ void periodic_sensor_task(void *arg)
         "\"p\":%.2f,"      // air pressure (hPa)
         "\"st\":%.2f,"     // soil temp (°C)
         "\"sm\":%.2f,"     // soil moisture (normalized/ADC)
-        "\"rain\":%.2f,"   // rain level (normalized)
+        "\"rain\":%.2f"   // rain level (normalized)
         // "\"uv\":%.2f,"     // combined/derived UV index
         // "\"uva\":%.2f,"
         // "\"uvb\":%.2f,"
