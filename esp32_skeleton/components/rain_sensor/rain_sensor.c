@@ -52,6 +52,8 @@ float rain_sensor_get_normalized(void) {
     return normalized;
 }
 
+// Commented out app_main - using servo_test.c instead
+/*
 void app_main(void) {
     rain_sensor_init();
 
@@ -62,4 +64,5 @@ void app_main(void) {
         vTaskDelay(pdMS_TO_TICKS(1000));
     }
 }
+*/
 
