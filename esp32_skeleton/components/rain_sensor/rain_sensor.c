@@ -7,7 +7,7 @@
 
 
 #define RAIN_SENSOR_ADC_CHAN ADC1_CHANNEL_0 
-#define RAIN_SENSOR_POWER_PIN GPIO_NUM_4 
+#define RAIN_SENSOR_POWER_PIN GPIO_NUM_13 
 
 void rain_sensor_init(void) {
 

@@ -172,7 +172,7 @@ void app_main(void)
 
     bme688_init(&data, &bme);
     ds18b20_init();
-    // rain_sensor_init();
+    rain_sensor_init();
     soil_moisture_init();
     // as7331_init(&sensor);
 
