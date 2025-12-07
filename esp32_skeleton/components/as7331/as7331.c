@@ -30,56 +30,55 @@ esp_err_t as7331_init(AS7331 *dev) {
 
     if (!dev) return ESP_ERR_INVALID_ARG;
 
-    dev->port = I2C_PORT_DEFAULT;
-    dev->addr = AS7331_ADDR;
-
     // 1. (Optional) Initialize I2C bus here if not done elsewhere
-    i2c_config_t conf = {
-        .mode = I2C_MODE_MASTER,
-        .sda_io_num = I2C_MASTER_SDA, 
-        .scl_io_num = I2C_MASTER_SCL, 
-        .sda_pullup_en = GPIO_PULLUP_ENABLE,
-        .scl_pullup_en = GPIO_PULLUP_ENABLE,
-        .master.clk_speed = 100000, // Slow down to 100 kHz for better reliability
-        .clk_flags = 0,
-        };
-    
-    i2c_param_config(I2C_NUM_0, &conf);
-    i2c_driver_install(I2C_NUM_0, conf.mode, I2C_MASTER_RX_BUF_DISABLE, I2C_MASTER_TX_BUF_DISABLE, 0);
+    i2c_master_bus_config_t bus_cfg = {
+          .i2c_port = I2C_PORT_DEFAULT,
+          .sda_io_num = I2C_MASTER_SDA,
+          .scl_io_num = I2C_MASTER_SCL,
+          .clk_source = I2C_CLK_SRC_DEFAULT,
+          .glitch_ignore_cnt = 7,
+          .flags.enable_internal_pullup = true,
+      };
+      ESP_ERROR_CHECK(i2c_new_master_bus(&bus_cfg, &dev->bus));
 
-    // Read status register to verify I2C communication
-    uint8_t test_status;
-    ESP_ERROR_CHECK(i2c_master_write_read_device(I2C_NUM_0, AS7331_ADDR, (uint8_t[]){OPERATIONAL_STATE_REG_AS7331}, 1, &test_status, 1, 1000 / portTICK_PERIOD_MS));
-    printf("Initial I2C test successful, can communicate with sensor at address 0x%02X\n", AS7331_ADDR);
-    
-    // Send reset command
-    uint8_t reset_cmd[2] = {OPERATIONAL_STATE_REG_AS7331, RESET_VALUE_AS7331};
-    ESP_ERROR_CHECK(i2c_master_write_to_device(I2C_NUM_0, AS7331_ADDR, reset_cmd, 2, 1000 / portTICK_PERIOD_MS));
-    vTaskDelay(pdMS_TO_TICKS(100));  // Wait for reset to complete
+      i2c_device_config_t dev_cfg = {
+          .dev_addr_length = I2C_ADDR_BIT_LEN_7,
+          .device_address = AS7331_ADDR,
+          .scl_speed_hz = 100000,
+      };
+      ESP_ERROR_CHECK(i2c_master_bus_add_device(dev->bus, &dev_cfg, &dev->dev));
+
+    // Read status register to verify i2c communication
+    uint8_t reg = OPERATIONAL_STATE_REG_AS7331;
+    uint8_t status;
+    ESP_ERROR_CHECK(i2c_master_transmit_receive(dev->dev, &reg, 1, &status, 1, pdMS_TO_TICKS(1000)));
+
+    uint8_t reset_cmd[] = {OPERATIONAL_STATE_REG_AS7331, RESET_VALUE_AS7331};
+    ESP_ERROR_CHECK(i2c_master_transmit(dev->dev, reset_cmd, sizeof(reset_cmd), pdMS_TO_TICKS(1000)));
 
     // Enter CONFIG mode afer reset
     uint8_t config_cmd[2] = {OPERATIONAL_STATE_REG_AS7331, CONFIG_VALUE_AS7331};
-    ESP_ERROR_CHECK(i2c_master_write_to_device(I2C_NUM_0, AS7331_ADDR, config_cmd, 2, 1000/portTICK_PERIOD_MS));
+    ESP_ERROR_CHECK(i2c_master_transmit(dev->dev, config_cmd, 2, pdMS_TO_TICKS(1000)));
     vTaskDelay(pdMS_TO_TICKS(20));
 
     // Configure measurement parameters
     uint8_t meas_config[2] = {CREG1_AS7331, CREG1_TIME_GAIN_VALUE_AS7331};
-    ESP_ERROR_CHECK(i2c_master_write_to_device(dev->port, dev->addr, meas_config, 2, 1000 / portTICK_PERIOD_MS));
+    ESP_ERROR_CHECK(i2c_master_transmit(dev->dev, meas_config, 2, pdMS_TO_TICKS(1000)));
     vTaskDelay(pdMS_TO_TICKS(20));
     
     // Configure CREG2 settings (default)
     uint8_t creg2_cmd[2] = {CREG2_AS7331, CREG2_VALUE_AS7331};
-    ESP_ERROR_CHECK(i2c_master_write_to_device(I2C_NUM_0, AS7331_ADDR, creg2_cmd, 2, 1000 / portTICK_PERIOD_MS));
+    ESP_ERROR_CHECK(i2c_master_transmit(dev->dev, creg2_cmd, 2, pdMS_TO_TICKS(1000)));
     vTaskDelay(pdMS_TO_TICKS(20));
     
     // Configure clock frequency
     uint8_t clock_cmd[2] = {CREG3_AS7331, CREG3_CCLK_VALUE};
-    ESP_ERROR_CHECK(i2c_master_write_to_device(I2C_NUM_0, AS7331_ADDR, clock_cmd, 2, 1000 / portTICK_PERIOD_MS));
+    ESP_ERROR_CHECK(i2c_master_transmit(dev->dev, clock_cmd, 2, pdMS_TO_TICKS(1000)));
     vTaskDelay(pdMS_TO_TICKS(20));
     
     // 3. Switch to MEASUREMENT mode
     uint8_t meas_cmd[2] = {OPERATIONAL_STATE_REG_AS7331, MEASUREMENT_VALUE_AS7331};
-    ESP_ERROR_CHECK(i2c_master_write_to_device(dev->port, dev->addr, meas_cmd, 2, 1000 / portTICK_PERIOD_MS));
+    ESP_ERROR_CHECK(i2c_master_transmit(dev->dev, meas_cmd, 2, pdMS_TO_TICKS(1000)));
     vTaskDelay(pdMS_TO_TICKS(10));
 
     printf("AS7331 initialized (real hardware)!\n");
@@ -87,19 +86,20 @@ esp_err_t as7331_init(AS7331 *dev) {
 }
 
 // INCLUDE THE REST OF THE FUNCTIONS BELOW
-esp_err_t AS7331_read_registers(AS7331 *dev, uint8_t reg_addr, uint8_t *data, size_t length) {
 
-    if (!dev || !data || !length) return ESP_ERR_INVALID_ARG; // stops function if called with invalid arguments
+esp_err_t AS7331_read_registers(AS7331 *dev, uint8_t reg, uint8_t *data, size_t len)
+  {
+      if (!dev || !data || !len) return ESP_ERR_INVALID_ARG;
+      return i2c_master_transmit_receive(dev->dev, &reg, 1, data, len, pdMS_TO_TICKS(1000));
+  }
 
-    return i2c_master_write_read_device(dev->port, dev->addr, &reg_addr, 1, data, length, 1000/portTICK_PERIOD_MS);
-}
-
-esp_err_t as7331_read_light(AS7331 *dev, AS7331_Light *light) {
+  esp_err_t as7331_read_light(AS7331 *dev, AS7331_Light *light)
+  {
     if (!dev || !light) return ESP_ERR_INVALID_ARG;
 
     // Trigger single measurement
     uint8_t trig_cmd[2] = {OPERATIONAL_STATE_REG_AS7331, UV_MEASUREMENT_TRIGGER_VALUE };
-    ESP_ERROR_CHECK(i2c_master_write_to_device(dev->port, dev->addr, trig_cmd, 2, 1000/portTICK_PERIOD_MS));
+    ESP_ERROR_CHECK(i2c_master_transmit(dev->dev, trig_cmd, sizeof(trig_cmd), pdMS_TO_TICKS(1000)));
     vTaskDelay(pdMS_TO_TICKS(150));
 
     // Read measurement registers
@@ -158,4 +158,4 @@ esp_err_t as7331_read_light(AS7331 *dev, AS7331_Light *light) {
     */
 
     return ESP_OK; // successful transaction
-}
+  }
