@@ -52,14 +52,14 @@ float rain_sensor_get_normalized(void) {
     return normalized;
 }
 
-void app_main(void) {
-    rain_sensor_init();
+// void app_main(void) {
+//     rain_sensor_init();
 
-    while(1) {
-        float rain_level = rain_sensor_get_normalized();
-        printf("Rain level: %.2f in\n", rain_level);
+//     while(1) {
+//         float rain_level = rain_sensor_get_normalized();
+//         printf("Rain level: %.2f in\n", rain_level);
 
-        vTaskDelay(pdMS_TO_TICKS(1000));
-    }
-}
+//         vTaskDelay(pdMS_TO_TICKS(1000));
+//     }
+// }
 

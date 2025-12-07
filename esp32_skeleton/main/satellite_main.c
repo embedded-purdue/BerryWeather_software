@@ -21,8 +21,8 @@ static const char *TAG = "satellite";
 //GLOBAL STRUCTS:
 struct bme68x_data data;
 struct bme68x_dev bme;
-AS7331 sensor;
-AS7331_Light light;
+// AS7331 sensor;
+// AS7331_Light light;
 
 // --- Sensor Stubs ---
 // Replace these with your actual sensor reading functions
@@ -67,30 +67,46 @@ void periodic_sensor_task(void *arg)
     soil_moisture_read(&soil_moisture);
     ESP_LOGI(TAG, "Soil Moisture -> Value: %.2f", soil_moisture);
 
-    as7331_read_light(&sensor, &light);
-    ESP_LOGI(TAG, "AS7331 Scaled -> UVA: %.2f, UVB: %.2f, UVC: %.2f uW/cm²", light.uva, light.uvb, light.uvc);
+    // as7331_read_light(&sensor, &light);
+    // ESP_LOGI(TAG, "AS7331 Scaled -> UVA: %.2f, UVB: %.2f, UVC: %.2f uW/cm²", light.uva, light.uvb, light.uvc);
 
-    float uv_index = light.uva;
+    // float uv_index = light.uva;
 
     // 2. Create the JSON payload
     char json_payload[256];
-    snprintf(json_payload, sizeof(json_payload),
-             "{"
-               "\"t\":%.2f,"      // air temp (°C)
-               "\"h\":%.2f,"      // air humidity (%%)
-               "\"p\":%.2f,"      // air pressure (hPa)
-               "\"st\":%.2f,"     // soil temp (°C)
-               "\"sm\":%.2f,"     // soil moisture (normalized/ADC)
-               "\"rain\":%.2f,"   // rain level (normalized)
-               "\"uv\":%.2f,"     // combined/derived UV index
-               "\"uva\":%.2f,"
-               "\"uvb\":%.2f,"
-               "\"uvc\":%.2f"
-             "}",
-             temp, hum, pres,
-             soil_temp, soil_moisture, rain_level,
-             uv_index,
-             light.uva, light.uvb, light.uvc);
+    // snprintf(json_payload, sizeof(json_payload),
+    //          "{"
+    //            "\"t\":%.2f,"      // air temp (°C)
+    //            "\"h\":%.2f,"      // air humidity (%%)
+    //            "\"p\":%.2f,"      // air pressure (hPa)
+    //            "\"st\":%.2f,"     // soil temp (°C)
+    //            "\"sm\":%.2f,"     // soil moisture (normalized/ADC)
+    //            "\"rain\":%.2f,"   // rain level (normalized)
+    //            "\"uv\":%.2f,"     // combined/derived UV index
+    //            "\"uva\":%.2f,"
+    //            "\"uvb\":%.2f,"
+    //            "\"uvc\":%.2f"
+    //          "}",
+    //          temp, hum, pres,
+    //          soil_temp, soil_moisture, rain_level,
+    //          uv_index,
+    //          light.uva, light.uvb, light.uvc);
+
+        snprintf(json_payload, sizeof(json_payload),
+        "{"
+        "\"t\":%.2f,"      // air temp (°C)
+        "\"h\":%.2f,"      // air humidity (%%)
+        "\"p\":%.2f,"      // air pressure (hPa)
+        "\"st\":%.2f,"     // soil temp (°C)
+        "\"sm\":%.2f,"     // soil moisture (normalized/ADC)
+        "\"rain\":%.2f,"   // rain level (normalized)
+        // "\"uv\":%.2f,"     // combined/derived UV index
+        // "\"uva\":%.2f,"
+        // "\"uvb\":%.2f,"
+        // "\"uvc\":%.2f"
+        "}",
+        temp, hum, pres,
+        soil_temp, soil_moisture, rain_level);
 
     printf("----------------------------------\n");
     printf("Reading sensors and sending data...\n");
@@ -156,9 +172,9 @@ void app_main(void)
 
     bme688_init(&data, &bme);
     ds18b20_init();
-    rain_sensor_init();
+    // rain_sensor_init();
     soil_moisture_init();
-    as7331_init(&sensor);
+    // as7331_init(&sensor);
 
 
     printf("Performing LoRa boot handshake...\n");
