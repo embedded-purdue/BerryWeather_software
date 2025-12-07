@@ -1,3 +1,7 @@
+idf_component_register(SRCS "wind_sensor_test.c"
+                       PRIV_REQUIRES wind_sensor
+                       REQUIRES driver
+                       INCLUDE_DIRS ".")
 # 1. Define a variable, "APP_TARGET", that defaults to "satellite"
 #    You can override this on the command line.
 set(APP_TARGET "satellite" CACHE STRING "Selects the app to build (satellite or middleman)")
