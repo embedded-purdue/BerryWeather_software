@@ -51,6 +51,7 @@ void periodic_sensor_task(void *arg)
     float temp, hum, pres;
     float soil_temp;
     float rain_level;
+    float soil_moisture;
     // float temperature = get_temp_data();
     bme688_read_temperature(&temp, &data, &bme);
     bme688_read_humidity(&hum, &data, &bme);

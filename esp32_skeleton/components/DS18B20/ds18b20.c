@@ -33,7 +33,7 @@ static bool onewire_reset(void) {
     esp_rom_delay_us(410);
     return presence;
 }
-Writes one byte to the 1-Wire bus, LSB first.
+// Writes one byte to the 1-Wire bus, LSB first.
 static void onewire_write_bit(bool bit) {
     onewire_low();
     esp_rom_delay_us(bit ? 6 : 60);
