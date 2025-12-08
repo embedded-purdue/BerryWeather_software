@@ -3,9 +3,10 @@
 
 #include <stdint.h>
 #include "bme68x.h"
+#include "driver/i2c_master.h"
 
 void bme688_init(struct bme68x_data *data,
-                 struct bme68x_dev *bme);
+                 struct bme68x_dev *bme, i2c_master_bus_handle_t bus_handle);
 
 /* Read temperature (°C) in FORCED mode.
  * Returns: BME68X_OK on success,

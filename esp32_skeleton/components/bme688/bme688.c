@@ -18,14 +18,14 @@ static const char *TAG = "BME688";
 #define I2C_MASTER_SCL_IO 22
 #define I2C_MASTER_SDA_IO 21
 
-i2c_master_bus_config_t i2c_mst_config = {
-    .clk_source = I2C_CLK_SRC_DEFAULT,
-    .i2c_port = TEST_I2C_PORT,
-    .scl_io_num = I2C_MASTER_SCL_IO,
-    .sda_io_num = I2C_MASTER_SDA_IO,
-    .glitch_ignore_cnt = 7,
-    .flags.enable_internal_pullup = true,
-};
+// i2c_master_bus_config_t i2c_mst_config = {
+//     .clk_source = I2C_CLK_SRC_DEFAULT,
+//     .i2c_port = TEST_I2C_PORT,
+//     .scl_io_num = I2C_MASTER_SCL_IO,
+//     .sda_io_num = I2C_MASTER_SDA_IO,
+//     .glitch_ignore_cnt = 7,
+//     .flags.enable_internal_pullup = true,
+// };
 
 i2c_master_bus_handle_t bus_handle;
 
@@ -105,7 +105,7 @@ static int8_t bme68x_i2c_write(uint8_t reg_addr, const uint8_t *reg_data, uint32
     return BME68X_OK;
 }
 
-void bme688_init(struct bme68x_data *data, struct bme68x_dev *bme) {
+void bme688_init(struct bme68x_data *data, struct bme68x_dev *bme, i2c_master_bus_handle_t bus_handle) {
     esp_err_t err;
     int8_t rslt;
 
@@ -114,12 +114,12 @@ void bme688_init(struct bme68x_data *data, struct bme68x_dev *bme) {
     // Set debug log level for detailed I2C communication logs
     esp_log_level_set(TAG, ESP_LOG_DEBUG);
 
-    // Initialize I2C bus
-    err = i2c_new_master_bus(&i2c_mst_config, &bus_handle);
-    if (err != ESP_OK) {
-        ESP_LOGE(TAG, "Failed to create I2C master bus: %d", err);
-        return;
-    }
+    // // Initialize I2C bus
+    // err = i2c_new_master_bus(&i2c_mst_config, &bus_handle);
+    // if (err != ESP_OK) {
+    //     ESP_LOGE(TAG, "Failed to create I2C master bus: %d", err);
+    //     return;
+    // }
 
     // Add device with known address 0x77
     dev_cfg.device_address = BME688_ADDR;  // Using our defined address (0x77)

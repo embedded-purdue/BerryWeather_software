@@ -7,21 +7,21 @@
 
 
 #define RAIN_SENSOR_ADC_CHAN ADC1_CHANNEL_0 
-#define RAIN_SENSOR_POWER_PIN GPIO_NUM_13 
+// #define RAIN_SENSOR_POWER_PIN GPIO_NUM_13 
 
 void rain_sensor_init(void) {
 
-    gpio_config_t io_conf = {
-        .pin_bit_mask = (1ULL << RAIN_SENSOR_POWER_PIN),
-        .mode = GPIO_MODE_OUTPUT,
-        .pull_up_en = GPIO_PULLUP_DISABLE,
-        .pull_down_en = GPIO_PULLDOWN_DISABLE,
-        .intr_type = GPIO_INTR_DISABLE
-    };
-    gpio_config(&io_conf);
+    // gpio_config_t io_conf = {
+    //     .pin_bit_mask = (1ULL << RAIN_SENSOR_POWER_PIN),
+    //     .mode = GPIO_MODE_OUTPUT,
+    //     .pull_up_en = GPIO_PULLUP_DISABLE,
+    //     .pull_down_en = GPIO_PULLDOWN_DISABLE,
+    //     .intr_type = GPIO_INTR_DISABLE
+    // };
+    // gpio_config(&io_conf);
 
     // Start with sensor powered OFF
-    gpio_set_level(RAIN_SENSOR_POWER_PIN, 0);
+    // gpio_set_level(RAIN_SENSOR_POWER_PIN, 0);
 
     adc1_config_width(ADC_WIDTH_BIT_12);
     adc1_config_channel_atten(RAIN_SENSOR_ADC_CHAN, ADC_ATTEN_DB_12);
@@ -31,16 +31,16 @@ void rain_sensor_init(void) {
 
 int rain_sensor_get_raw(void) {
     // Turn sensor ON
-    gpio_set_level(RAIN_SENSOR_POWER_PIN, 1);
+    // gpio_set_level(RAIN_SENSOR_POWER_PIN, 1);
     
     // Wait for voltage to stabilize (10ns)
-    vTaskDelay(pdMS_TO_TICKS(10));
+    // vTaskDelay(pdMS_TO_TICKS(10));
     
     // Read the sensor
     int raw = adc1_get_raw(RAIN_SENSOR_ADC_CHAN);
     
     // Turn sensor OFF to prevent corrosion
-    gpio_set_level(RAIN_SENSOR_POWER_PIN, 0);
+    // gpio_set_level(RAIN_SENSOR_POWER_PIN, 0);
     return raw;
 }
 
