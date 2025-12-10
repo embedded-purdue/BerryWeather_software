@@ -112,8 +112,8 @@ esp_err_t AS7331_read_registers(AS7331 *dev, uint8_t reg, uint8_t *data, size_t 
     uint16_t raw_uvc = ((uint16_t)buf[5] << 8) | buf[4];
 
     // Change raw values by setting floor value to 0 when there is complete darkness
-    raw_uva --;
-    raw_uvb --;
+    // raw_uva --;
+    // raw_uvb --;
     raw_uvc = 0; // Clamp UVC channel to 0 because short-wave UVA/UVB leak in; should be 0 in direct sunlight
 
     // Store raw values

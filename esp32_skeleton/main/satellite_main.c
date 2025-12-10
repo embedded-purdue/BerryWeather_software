@@ -55,7 +55,7 @@ void periodic_sensor_task(void *arg)
     // Define the send interval (e.g., 30 minutes)
     // For testing, you can set this to a shorter duration, like 30 seconds:
     // const int SEND_INTERVAL_SECONDS = 30;
-    const int SEND_INTERVAL_MINUTES = 1;
+    const int SEND_INTERVAL_MINUTES = 0.5;
     const uint64_t SEND_INTERVAL_US = (uint64_t)SEND_INTERVAL_MINUTES * 60 * 1000 * 1000;
     
     printf("Starting periodic sensor task. Sending every %d minutes.\n", SEND_INTERVAL_MINUTES);
@@ -63,7 +63,7 @@ void periodic_sensor_task(void *arg)
     // 1. Read data from sensors
     float temp, hum, pres;
     float soil_temp;
-    float rain_level;
+    rain_level_t rain_level;
     float soil_moisture;
     // float temperature = get_temp_data();
     bme688_read_temperature(&temp, &data, &bme);
@@ -75,7 +75,7 @@ void periodic_sensor_task(void *arg)
     ESP_LOGI(TAG, "DS18B20 -> Soil Temp: %.2f °C", soil_temp);
 
     rain_level = rain_sensor_get_normalized();
-    ESP_LOGI(TAG, "Rain Sensor -> Level: %.2f", rain_level);
+    ESP_LOGI(TAG, "Rain Sensor -> Level: %d", rain_level);
 
     soil_moisture_read(&soil_moisture);
     ESP_LOGI(TAG, "Soil Moisture -> Value: %.2f", soil_moisture);
@@ -88,22 +88,6 @@ void periodic_sensor_task(void *arg)
     // 2. Create the JSON payload
     char json_payload[256];
 
-        // snprintf(json_payload, sizeof(json_payload),
-        // "{"
-        // "\"t\":%.2f,"      // air temp (°C)
-        // "\"h\":%.2f,"      // air humidity (%%)
-        // "\"p\":%.2f,"      // air pressure (hPa)
-        // "\"st\":%.2f,"     // soil temp (°C)
-        // "\"sm\":%.2f,"     // soil moisture (normalized/ADC)
-        // "\"rain\":%.2f"   // rain level (normalized)
-        // // "\"uv\":%.2f,"     // combined/derived UV index
-        // // "\"uva\":%.2f,"
-        // // "\"uvb\":%.2f,"
-        // // "\"uvc\":%.2f"
-        // "}",
-        // temp, hum, pres/1000,
-        // soil_temp, soil_moisture, rain_level);
-
         snprintf(json_payload, sizeof(json_payload),
             "{"
             "\"t\":%.2f,"      // air temp (°C)
@@ -111,7 +95,7 @@ void periodic_sensor_task(void *arg)
             "\"p\":%.2f,"      // air pressure (hPa)
             "\"st\":%.2f,"     // soil temp (°C)
             "\"sm\":%.2f,"     // soil moisture (normalized/ADC)
-            "\"rain\":%.2f,"   // rain level (normalized)
+            "\"rain\":%d,"   // rain level (normalized)
             "\"uv\":%.2f,"     // combined/derived UV index
             "\"uva\":%.2f,"
             "\"uvb\":%.2f,"
@@ -154,17 +138,6 @@ void periodic_sensor_task(void *arg)
     
     esp_sleep_enable_timer_wakeup(SEND_INTERVAL_US);
     esp_deep_sleep_start();
-
-    /*
-    // --- OR ---
-    // If you don't want deep sleep, you can use vTaskDelay.
-    // This keeps the ESP32 powered on but pauses the task.
-    // It uses much more power than deep sleep.
-    
-    printf("Data sent. Delaying task for %d minutes.\n", SEND_INTERVAL_MINUTES);
-    printf("----------------------------------\n");
-    vTaskDelay(pdMS_TO_TICKS(SEND_INTERVAL_MINUTES * 60 * 1000));
-    */
 }
 
 void app_main(void)
@@ -187,11 +160,11 @@ void app_main(void)
     //INIT BUS:
     i2c_init_shared_bus();
 
-    bme688_init(&data, &bme, main_bus_handle);
     ds18b20_init();
     rain_sensor_init();
     soil_moisture_init();
     as7331_init(&sensor, main_bus_handle);
+    bme688_init(&data, &bme, main_bus_handle);
 
 
     printf("Performing LoRa boot handshake...\n");
@@ -202,6 +175,4 @@ void app_main(void)
     }
     xTaskCreate(periodic_sensor_task, "periodic_sensor_task", 4096, NULL, 5, NULL);
 
-    // If using deep sleep, the code in periodic_sensor_task will run,
-    // and then the device will sleep and reboot.
 }
