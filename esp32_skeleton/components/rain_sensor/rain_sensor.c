@@ -46,21 +46,22 @@ int rain_sensor_get_raw(void) {
     return raw;
 }
 
-rain_level_t rain_sensor_get_normalized(void) {
+float rain_sensor_get_normalized(void) {
     int raw_value = rain_sensor_get_raw();
     // Convert raw ADC value to normalized 0-1 scale
     // 0V -> 0.0, 3.3V -> 1.0
     float normalized = raw_value / 4095.0;
 
-    if (normalized < 0.02f) {
-        return RAIN_NONE;
-    } else if (normalized < 0.10f) {
-        return RAIN_LIGHT;
-    } else if (normalized < 0.18f) {
-        return RAIN_MODERATE;
-    } else {
-        return RAIN_HEAVY;
-    }
+    // if (normalized < 0.02f) {
+    //     return RAIN_NONE;
+    // } else if (normalized < 0.10f) {
+    //     return RAIN_LIGHT;
+    // } else if (normalized < 0.18f) {
+    //     return RAIN_MODERATE;
+    // } else {
+    //     return RAIN_HEAVY;
+    // }
+    return normalized;
 }
 
 // void app_main(void) {

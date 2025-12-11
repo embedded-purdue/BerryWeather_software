@@ -130,7 +130,7 @@ void publish_discovery_for_satellite(esp_mqtt_client_handle_t client, int sat_ad
     ESP_LOGI(TAG, "Publishing discovery messages for satellite address %d", sat_addr);
 
     char discovery_topic[512];
-    char discovery_payload[1024];
+    char discovery_payload[2048];
     char state_topic[128];
     char unique_id[256];
     char device_name[128];
@@ -233,8 +233,8 @@ void publish_discovery_for_satellite(esp_mqtt_client_handle_t client, int sat_ad
             "\"name\": \"%s Rain Level\","
             "\"unique_id\": \"%s\","
             "\"stat_t\": \"%s\","
-            "\"val_tpl\": \"{%% set m = {0:'None',1:'Light',2:'Moderate',3:'Heavy'} %%} {{ m[value_json.rain | int] }}\","
-            // "\"val_tpl\": \"{{ value_json.rain }}\","
+            // "\"val_tpl\": \"{%% set m = {0:'None',1:'Light',2:'Moderate',3:'Heavy'} %%} {{ m[value_json.rain | int] }}\","
+            "\"val_tpl\": \"{{ value_json.rain }}\","
             "\"unit_of_meas\": \"in\","
             "\"ic\": \"mdi:weather-rainy\","
             "\"dev\": {\"ids\": [\"%s\"],\"name\": \"%s\",\"mf\": \"ESAP\"}"
@@ -251,7 +251,7 @@ void publish_discovery_for_satellite(esp_mqtt_client_handle_t client, int sat_ad
             "\"unique_id\": \"%s\","
             "\"stat_t\": \"%s\","
             "\"val_tpl\": \"{{ value_json.uva }}\","
-            "\"unit_of_meas\": \"µW/cm²\","
+            "\"unit_of_meas\": \"W/m²\","
             "\"ic\": \"mdi:weather-sunny\","
             "\"dev\": {\"ids\": [\"%s\"],\"name\": \"%s\",\"mf\": \"ESAP\"}"
         "}",
@@ -267,7 +267,7 @@ void publish_discovery_for_satellite(esp_mqtt_client_handle_t client, int sat_ad
             "\"unique_id\": \"%s\","
             "\"stat_t\": \"%s\","
             "\"val_tpl\": \"{{ value_json.uvb }}\","
-            "\"unit_of_meas\": \"µW/cm²\","
+            "\"unit_of_meas\": \"W/m²\","
             "\"ic\": \"mdi:weather-sunny\","
             "\"dev\": {\"ids\": [\"%s\"],\"name\": \"%s\",\"mf\": \"ESAP\"}"
         "}",
@@ -283,7 +283,7 @@ void publish_discovery_for_satellite(esp_mqtt_client_handle_t client, int sat_ad
             "\"unique_id\": \"%s\","
             "\"stat_t\": \"%s\","
             "\"val_tpl\": \"{{ value_json.uvc }}\","
-            "\"unit_of_meas\": \"µW/cm²\","
+            "\"unit_of_meas\": \"W/m²\","
             "\"ic\": \"mdi:weather-sunny\","
             "\"dev\": {\"ids\": [\"%s\"],\"name\": \"%s\",\"mf\": \"ESAP\"}"
         "}",
